@@ -35,12 +35,15 @@ def get_model(point_cloud, is_training, bn_decay=None):
   adj_matrix = tf_util.pairwise_distance(point_cloud_transformed)
   nn_idx = tf_util.knn(adj_matrix, k=k)
   edge_feature = tf_util.get_edge_feature(point_cloud_transformed, nn_idx=nn_idx, k=k)
+  print("edge_feature  = ", edge_feature.shape())
 
   net = tf_util.conv2d(edge_feature, 64, [1,2],
                        padding='VALID', stride=[1,1],
                        bn=True, is_training=is_training,
                        scope='dgcnn1', bn_decay=bn_decay)
+  print("net1  = ", net.shape())
   net = tf.reduce_max(net, axis=-2, keep_dims=True)
+  print("net1_max  = ", net.shape())
   net1 = net
 
   adj_matrix = tf_util.pairwise_distance(net)
@@ -77,7 +80,7 @@ def get_model(point_cloud, is_training, bn_decay=None):
   net4 = net
 
   # net = tf_util.conv2d(tf.concat([net1, net2, net3, net4], axis=-1), 1024, [1, 1],
-  net = tf_util.conv2d(net, 1024, [1, 1], 
+  net = tf_util.conv2d(net, 1024, [1, 1],
                        padding='VALID', stride=[1,1],
                        bn=True, is_training=is_training,
                        scope='agg', bn_decay=bn_decay)
