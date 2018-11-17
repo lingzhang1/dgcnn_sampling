@@ -38,6 +38,16 @@ def get_model(point_cloud, is_training, bn_decay=None):
   print("edge_feature  = ", edge_feature.shape)
 
   net = tf_util.conv2d(edge_feature, 64, [1,1],
+                       padding='VALID', stride=[1,1],
+                       bn=True, is_training=is_training,
+                       scope='dgcnn1', bn_decay=bn_decay)
+
+  net = tf_util.conv2d(net, 64, [1,1],
+                       padding='VALID', stride=[1,1],
+                       bn=True, is_training=is_training,
+                       scope='dgcnn1', bn_decay=bn_decay)
+
+  net = tf_util.conv2d(net, 64, [1,1],
                        padding='VALID', stride=[2,1],
                        bn=True, is_training=is_training,
                        scope='dgcnn1', bn_decay=bn_decay)
@@ -51,6 +61,10 @@ def get_model(point_cloud, is_training, bn_decay=None):
   edge_feature = tf_util.get_edge_feature(net, nn_idx=nn_idx, k=k)
 
   net = tf_util.conv2d(edge_feature, 64, [1,1],
+                       padding='VALID', stride=[1,1],
+                       bn=True, is_training=is_training,
+                       scope='dgcnn1', bn_decay=bn_decay)
+  net = tf_util.conv2d(net, 64, [1,1],
                        padding='VALID', stride=[2,1],
                        bn=True, is_training=is_training,
                        scope='dgcnn2', bn_decay=bn_decay)
@@ -62,9 +76,13 @@ def get_model(point_cloud, is_training, bn_decay=None):
   edge_feature = tf_util.get_edge_feature(net, nn_idx=nn_idx, k=k)
 
   net = tf_util.conv2d(edge_feature, 64, [1,1],
-                       padding='VALID', stride=[2,1],
+                       padding='VALID', stride=[1,1],
                        bn=True, is_training=is_training,
                        scope='dgcnn3', bn_decay=bn_decay)
+  net = tf_util.conv2d(net, 64, [1,1],
+                       padding='VALID', stride=[2,1],
+                       bn=True, is_training=is_training,
+                       scope='dgcnn1', bn_decay=bn_decay)
   net = tf.reduce_max(net, axis=-2, keep_dims=True)
   net3 = net
 
@@ -73,6 +91,10 @@ def get_model(point_cloud, is_training, bn_decay=None):
   edge_feature = tf_util.get_edge_feature(net, nn_idx=nn_idx, k=k)
 
   net = tf_util.conv2d(edge_feature, 128, [1,1],
+                       padding='VALID', stride=[1,1],
+                       bn=True, is_training=is_training,
+                       scope='dgcnn4', bn_decay=bn_decay)
+  net = tf_util.conv2d(net, 128, [1,1],
                        padding='VALID', stride=[2,1],
                        bn=True, is_training=is_training,
                        scope='dgcnn4', bn_decay=bn_decay)
