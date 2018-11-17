@@ -41,13 +41,13 @@ def get_model(point_cloud, is_training, bn_decay=None):
                        padding='VALID', stride=[1,1],
                        bn=True, is_training=is_training,
                        scope='dgcnn1', bn_decay=bn_decay)
+  net = tf.reduce_max(net, axis=-2, keep_dims=True)
+  print("net1_max  = ", net.shape)
   net = tf_util.conv2d(net, 64, [1,1],
                        padding='VALID', stride=[2,1],
                        bn=True, is_training=is_training,
                        scope='dgcnn2', bn_decay=bn_decay)
   print("net1  = ", net.shape)
-  net = tf.reduce_max(net, axis=-2, keep_dims=True)
-  print("net1_max  = ", net.shape)
   net1 = net
 
   adj_matrix = tf_util.pairwise_distance(net)
@@ -58,11 +58,11 @@ def get_model(point_cloud, is_training, bn_decay=None):
                        padding='VALID', stride=[1,1],
                        bn=True, is_training=is_training,
                        scope='dgcnn3', bn_decay=bn_decay)
+  net = tf.reduce_max(net, axis=-2, keep_dims=True)
   net = tf_util.conv2d(net, 64, [1,1],
                        padding='VALID', stride=[2,1],
                        bn=True, is_training=is_training,
                        scope='dgcnn4', bn_decay=bn_decay)
-  net = tf.reduce_max(net, axis=-2, keep_dims=True)
   net2 = net
 
   adj_matrix = tf_util.pairwise_distance(net)
@@ -73,11 +73,12 @@ def get_model(point_cloud, is_training, bn_decay=None):
                        padding='VALID', stride=[1,1],
                        bn=True, is_training=is_training,
                        scope='dgcnn5', bn_decay=bn_decay)
+
+  net = tf.reduce_max(net, axis=-2, keep_dims=True)
   net = tf_util.conv2d(net, 64, [1,1],
                        padding='VALID', stride=[2,1],
                        bn=True, is_training=is_training,
                        scope='dgcnn6', bn_decay=bn_decay)
-  net = tf.reduce_max(net, axis=-2, keep_dims=True)
   net3 = net
 
   adj_matrix = tf_util.pairwise_distance(net)
@@ -88,11 +89,11 @@ def get_model(point_cloud, is_training, bn_decay=None):
                        padding='VALID', stride=[1,1],
                        bn=True, is_training=is_training,
                        scope='dgcnn7', bn_decay=bn_decay)
+  net = tf.reduce_max(net, axis=-2, keep_dims=True)
   net = tf_util.conv2d(net, 128, [1,1],
                        padding='VALID', stride=[2,1],
                        bn=True, is_training=is_training,
                        scope='dgcnn8', bn_decay=bn_decay)
-  net = tf.reduce_max(net, axis=-2, keep_dims=True)
   net4 = net
 
   # net = tf_util.conv2d(tf.concat([net1, net2, net3, net4], axis=-1), 1024, [1, 1],
