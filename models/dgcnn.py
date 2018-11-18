@@ -80,7 +80,7 @@ def get_model(point_cloud, is_training, bn_decay=None):
   net = tf_util.conv2d(net, 256, [1,1],
                        padding='VALID', stride=[2,1],
                        bn=True, is_training=is_training,
-                       scope='dgcnn7', bn_decay=bn_decay)
+                       scope='dgcnn6', bn_decay=bn_decay)
 
   net = tf.reduce_max(net, axis=-2, keep_dims=True)
   net3 = net
@@ -92,12 +92,12 @@ def get_model(point_cloud, is_training, bn_decay=None):
   net = tf_util.conv2d(edge_feature, 512, [1,1],
                        padding='VALID', stride=[1,1],
                        bn=True, is_training=is_training,
-                       scope='dgcnn5', bn_decay=bn_decay)
+                       scope='dgcnn7', bn_decay=bn_decay)
   # n = 64
   net = tf_util.conv2d(net, 512, [1,1],
                        padding='VALID', stride=[2,1],
                        bn=True, is_training=is_training,
-                       scope='dgcnn5', bn_decay=bn_decay)
+                       scope='dgcnn8', bn_decay=bn_decay)
   net = tf.reduce_max(net, axis=-2, keep_dims=True)
   net4 = net
 
