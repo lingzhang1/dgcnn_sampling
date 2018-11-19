@@ -26,10 +26,6 @@ def model_part(point_cloud, is_training, k, bn_decay=None):
                          padding='VALID', stride=[2,1],
                          bn=True, is_training=is_training,
                          scope='dgcnn1', bn_decay=bn_decay)
-    net1 = tf_util.conv2d(edge_feature_1, 64, [1,1],
-                         padding='VALID', stride=[2,1],
-                         bn=True, is_training=is_training,
-                         scope='dgcnn1', bn_decay=bn_decay)
     print("net1  = ", net.shape)
     net = tf.reduce_max(net, axis=-2, keep_dims=True)
     print("net1_max  = ", net.shape)
