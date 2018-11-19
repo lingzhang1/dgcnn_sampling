@@ -86,7 +86,7 @@ def get_model(point_cloud, is_training, bn_decay=None):
   net = model_part(point_cloud, is_training, bn_decay)
 
   print("point_cloud = ", point_cloud.shape)
-  template = tf.make_ndarray(point_cloud)
+  template = tf.contrib.util.make_ndarray(point_cloud)
   template[:, -1, :] = point_cloud[:, 0, :]
   template[:,0:-1, :] = point_cloud[:, 1:, :]
   template = tf.convert_to_tensor(template, dtype=tf.float32)
