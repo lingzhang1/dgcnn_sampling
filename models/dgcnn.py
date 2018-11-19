@@ -82,14 +82,14 @@ def model_part(point_cloud, is_training, bn_decay=None):
 def get_model(point_cloud, is_training, bn_decay=None):
   """ Classification PointNet, input is BxNx3, output Bx40 """
 
-  net = model_part(point_cloud_transformed, is_training, bn_decay)
+  net = model_part(point_cloud, is_training, bn_decay)
 
   print("point_cloud = ", point_cloud.shape)
   template = point_cloud
   template[:, -1, :] = point_cloud[:, 0, :]
   template[:,0:-1, :] = point_cloud[:, 1:, :]
   print("template = ", template.shape)
-  
+
   net_clip = model_part(template, is_training, bn_decay)
 
   net_concat = tf.concat([net, net_clip], axis=2)
