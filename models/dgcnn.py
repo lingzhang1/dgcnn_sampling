@@ -16,6 +16,10 @@ def placeholder_inputs(batch_size, num_point):
   labels_pl = tf.placeholder(tf.int32, shape=(batch_size))
   return pointclouds_pl, labels_pl
 
+tf.enable_eager_execution()
+def tensor_to_array(tensor1):
+    return tensor1.numpy()
+
 def model_part(point_cloud, is_training, bn_decay=None):
     batch_size = point_cloud.get_shape()[0].value
     num_point = point_cloud.get_shape()[1].value
@@ -85,11 +89,12 @@ def get_model(point_cloud, is_training, bn_decay=None):
   net = model_part(point_cloud, is_training, bn_decay)
 
   print("point_cloud = ", point_cloud.shape)
-  template = point_cloud
+  template = tensor_to_array(point_cloud)
   template[:, -1, :] = point_cloud[:, 0, :]
   template[:,0:-1, :] = point_cloud[:, 1:, :]
+  template = tf.convert_to_tensor(template, dtype=tf.float32)
   print("template = ", template.shape)
-
+  
   net_clip = model_part(template, is_training, bn_decay)
 
   net_concat = tf.concat([net, net_clip], axis=2)
