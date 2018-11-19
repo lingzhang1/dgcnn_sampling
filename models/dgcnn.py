@@ -16,6 +16,59 @@ def placeholder_inputs(batch_size, num_point):
   labels_pl = tf.placeholder(tf.int32, shape=(batch_size))
   return pointclouds_pl, labels_pl
 
+def model_part(point_cloud, is_training, bn_decay=None):
+    adj_matrix = tf_util.pairwise_distance(point_cloud)
+    nn_idx = tf_util.knn(adj_matrix, k=k)
+    edge_feature = tf_util.get_edge_feature(point_cloud, nn_idx=nn_idx, k=k)
+    print("edge_feature  = ", edge_feature.shape)
+
+    net = tf_util.conv2d(edge_feature, 64, [1,1],
+                         padding='VALID', stride=[2,1],
+                         bn=True, is_training=is_training,
+                         scope='dgcnn1', bn_decay=bn_decay)
+    net1 = tf_util.conv2d(edge_feature_1, 64, [1,1],
+                         padding='VALID', stride=[2,1],
+                         bn=True, is_training=is_training,
+                         scope='dgcnn1', bn_decay=bn_decay)
+    print("net1  = ", net.shape)
+    net = tf.reduce_max(net, axis=-2, keep_dims=True)
+    print("net1_max  = ", net.shape)
+    net1 = net
+
+    adj_matrix = tf_util.pairwise_distance(net)
+    nn_idx = tf_util.knn(adj_matrix, k=k)
+    edge_feature = tf_util.get_edge_feature(net, nn_idx=nn_idx, k=k)
+
+    net = tf_util.conv2d(edge_feature, 64, [1,1],
+                         padding='VALID', stride=[2,1],
+                         bn=True, is_training=is_training,
+                         scope='dgcnn2', bn_decay=bn_decay)
+    net = tf.reduce_max(net, axis=-2, keep_dims=True)
+    net2 = net
+
+    adj_matrix = tf_util.pairwise_distance(net)
+    nn_idx = tf_util.knn(adj_matrix, k=k)
+    edge_feature = tf_util.get_edge_feature(net, nn_idx=nn_idx, k=k)
+
+    net = tf_util.conv2d(edge_feature, 64, [1,1],
+                         padding='VALID', stride=[2,1],
+                         bn=True, is_training=is_training,
+                         scope='dgcnn3', bn_decay=bn_decay)
+    net = tf.reduce_max(net, axis=-2, keep_dims=True)
+    net3 = net
+
+    adj_matrix = tf_util.pairwise_distance(net)
+    nn_idx = tf_util.knn(adj_matrix, k=k)
+    edge_feature = tf_util.get_edge_feature(net, nn_idx=nn_idx, k=k)
+
+    net = tf_util.conv2d(edge_feature, 128, [1,1],
+                         padding='VALID', stride=[2,1],
+                         bn=True, is_training=is_training,
+                         scope='dgcnn4', bn_decay=bn_decay)
+    net = tf.reduce_max(net, axis=-2, keep_dims=True)
+    net4 = net
+    return net
+
 
 def get_model(point_cloud, is_training, bn_decay=None):
   """ Classification PointNet, input is BxNx3, output Bx40 """
@@ -32,77 +85,18 @@ def get_model(point_cloud, is_training, bn_decay=None):
     transform = input_transform_net(edge_feature, is_training, bn_decay, K=3)
 
   point_cloud_transformed = tf.matmul(point_cloud, transform)
-  adj_matrix = tf_util.pairwise_distance(point_cloud_transformed)
-  nn_idx = tf_util.knn(adj_matrix, k=k)
-  edge_feature = tf_util.get_edge_feature(point_cloud_transformed, nn_idx=nn_idx, k=k)
-  print("edge_feature  = ", edge_feature.shape)
 
-  net = tf_util.conv2d(edge_feature, 64, [1,1],
-                       padding='VALID', stride=[1,1],
-                       bn=True, is_training=is_training,
-                       scope='dgcnn1', bn_decay=bn_decay)
-  # n = 512
-  net = tf_util.conv2d(net, 64, [1,1],
-                       padding='VALID', stride=[2,1],
-                       bn=True, is_training=is_training,
-                       scope='dgcnn2', bn_decay=bn_decay)
-  print("net1  = ", net.shape)
-  net = tf.reduce_max(net, axis=-2, keep_dims=True)
-  print("net1_max  = ", net.shape)
-  net1 = net
+  net = model_part(point_cloud_transformed, is_training, bn_decay)
 
-  adj_matrix = tf_util.pairwise_distance(net)
-  nn_idx = tf_util.knn(adj_matrix, k=k)
-  edge_feature = tf_util.get_edge_feature(net, nn_idx=nn_idx, k=k)
+  first = point_cloud_transformed[0]
+  point_cloud_transformed = point_cloud_transformed[1,:]
+  point_cloud_transformed.append(first)
+  net_clip = model_part(point_cloud_transformed, is_training, bn_decay)
 
-  net = tf_util.conv2d(edge_feature, 128, [1,1],
-                       padding='VALID', stride=[1,1],
-                       bn=True, is_training=is_training,
-                       scope='dgcnn3', bn_decay=bn_decay)
-  net = tf.reduce_max(net, axis=-2, keep_dims=True)
-  # n = 256
-  net = tf_util.conv2d(net, 128, [2,1],
-                       padding='VALID', stride=[2,1],
-                       bn=True, is_training=is_training,
-                       scope='dgcnn4', bn_decay=bn_decay)
-  net = tf.reduce_max(net, axis=-2, keep_dims=True)
-  net2 = net
-
-  adj_matrix = tf_util.pairwise_distance(net)
-  nn_idx = tf_util.knn(adj_matrix, k=k)
-  edge_feature = tf_util.get_edge_feature(net, nn_idx=nn_idx, k=k)
-
-  net = tf_util.conv2d(edge_feature, 256, [1,1],
-                       padding='VALID', stride=[1,1],
-                       bn=True, is_training=is_training,
-                       scope='dgcnn5', bn_decay=bn_decay)
-  # n = 128
-  net = tf_util.conv2d(net, 256, [1,1],
-                       padding='VALID', stride=[2,1],
-                       bn=True, is_training=is_training,
-                       scope='dgcnn6', bn_decay=bn_decay)
-
-  net = tf.reduce_max(net, axis=-2, keep_dims=True)
-  net3 = net
-
-  adj_matrix = tf_util.pairwise_distance(net)
-  nn_idx = tf_util.knn(adj_matrix, k=k)
-  edge_feature = tf_util.get_edge_feature(net, nn_idx=nn_idx, k=k)
-
-  net = tf_util.conv2d(edge_feature, 512, [1,1],
-                       padding='VALID', stride=[1,1],
-                       bn=True, is_training=is_training,
-                       scope='dgcnn7', bn_decay=bn_decay)
-  # n = 64
-  net = tf_util.conv2d(net, 512, [1,1],
-                       padding='VALID', stride=[2,1],
-                       bn=True, is_training=is_training,
-                       scope='dgcnn8', bn_decay=bn_decay)
-  net = tf.reduce_max(net, axis=-2, keep_dims=True)
-  net4 = net
-
+  net_concat = tf.concat([net, net_clip], axis=2)
+  print("net_concat = ", net_concat.shape)
   # net = tf_util.conv2d(tf.concat([net1, net2, net3, net4], axis=-1), 1024, [1, 1],
-  net = tf_util.conv2d(net, 1024, [1, 1],
+  net = tf_util.conv2d(net_concat, 1024, [1, 1],
                        padding='VALID', stride=[1,1],
                        bn=True, is_training=is_training,
                        scope='agg', bn_decay=bn_decay)
