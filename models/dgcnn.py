@@ -86,12 +86,12 @@ def get_model(point_cloud, is_training, bn_decay=None):
 
   point_cloud_transformed = tf.matmul(point_cloud, transform)
 
-  net = model_part(point_cloud_transformed, is_training, bn_decay, k)
+  net = model_part(point_cloud_transformed, is_training, k, bn_decay)
 
   first = point_cloud_transformed[0]
   point_cloud_transformed = point_cloud_transformed[1,:]
   point_cloud_transformed.append(first)
-  net_clip = model_part(point_cloud_transformed, is_training, bn_decay, k)
+  net_clip = model_part(point_cloud_transformed, is_training, k, bn_decay)
 
   net_concat = tf.concat([net, net_clip], axis=2)
   print("net_concat = ", net_concat.shape)
