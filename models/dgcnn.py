@@ -16,7 +16,20 @@ def placeholder_inputs(batch_size, num_point):
   labels_pl = tf.placeholder(tf.int32, shape=(batch_size))
   return pointclouds_pl, labels_pl
 
-def model_part(point_cloud, is_training, k, bn_decay=None):
+def model_part(point_cloud, is_training, bn_decay=None):
+    batch_size = point_cloud.get_shape()[0].value
+    num_point = point_cloud.get_shape()[1].value
+    end_points = {}
+    k = 20
+
+    adj_matrix = tf_util.pairwise_distance(point_cloud)
+    nn_idx = tf_util.knn(adj_matrix, k=k)
+    edge_feature = tf_util.get_edge_feature(point_cloud, nn_idx=nn_idx, k=k)
+
+    with tf.variable_scope('transform_net1') as sc:
+        transform = input_transform_net(edge_feature, is_training, bn_decay, K=3)
+
+    point_cloud_transformed = tf.matmul(point_cloud, transform)
     adj_matrix = tf_util.pairwise_distance(point_cloud)
     nn_idx = tf_util.knn(adj_matrix, k=k)
     edge_feature = tf_util.get_edge_feature(point_cloud, nn_idx=nn_idx, k=k)
@@ -68,28 +81,16 @@ def model_part(point_cloud, is_training, k, bn_decay=None):
 
 def get_model(point_cloud, is_training, bn_decay=None):
   """ Classification PointNet, input is BxNx3, output Bx40 """
-  batch_size = point_cloud.get_shape()[0].value
-  num_point = point_cloud.get_shape()[1].value
-  end_points = {}
-  k = 20
 
-  adj_matrix = tf_util.pairwise_distance(point_cloud)
-  nn_idx = tf_util.knn(adj_matrix, k=k)
-  edge_feature = tf_util.get_edge_feature(point_cloud, nn_idx=nn_idx, k=k)
+  net = model_part(point_cloud_transformed, is_training, bn_decay)
 
-  with tf.variable_scope('transform_net1') as sc:
-    transform = input_transform_net(edge_feature, is_training, bn_decay, K=3)
-
-  point_cloud_transformed = tf.matmul(point_cloud, transform)
-
-  net = model_part(point_cloud_transformed, is_training, k, bn_decay)
-
-  print("point_cloud_transformed = ", point_cloud_transformed.shape)
-  template = point_cloud_transformed
-  template[:, -1, :] = point_cloud_transformed[:, 0, :]
-  template[:,0:-1, :] = point_cloud_transformed[:, 1:, :]
+  print("point_cloud = ", point_cloud.shape)
+  template = point_cloud
+  template[:, -1, :] = point_cloud[:, 0, :]
+  template[:,0:-1, :] = point_cloud[:, 1:, :]
   print("template = ", template.shape)
-  net_clip = model_part(template, is_training, k, bn_decay)
+  
+  net_clip = model_part(template, is_training, bn_decay)
 
   net_concat = tf.concat([net, net_clip], axis=2)
   print("net_concat = ", net_concat.shape)
