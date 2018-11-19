@@ -16,7 +16,7 @@ def placeholder_inputs(batch_size, num_point):
   labels_pl = tf.placeholder(tf.int32, shape=(batch_size))
   return pointclouds_pl, labels_pl
 
-def model_part(point_cloud, is_training, bn_decay=None):
+def model_part(point_cloud, is_training, bn_decay=None, k):
     adj_matrix = tf_util.pairwise_distance(point_cloud)
     nn_idx = tf_util.knn(adj_matrix, k=k)
     edge_feature = tf_util.get_edge_feature(point_cloud, nn_idx=nn_idx, k=k)
