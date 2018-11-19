@@ -84,9 +84,10 @@ def get_model(point_cloud, is_training, bn_decay=None):
 
   net = model_part(point_cloud_transformed, is_training, k, bn_decay)
 
+  print("point_cloud_transformed = ", point_cloud_transformed.shape)
   template = point_cloud_transformed
-  template[:, -1, :, : ] = point_cloud_transformed[:, 0, :, :]
-  template[:,0:-1, :, :] = point_cloud_transformed[:, 1:, :, :]
+  template[:, -1, :] = point_cloud_transformed[:, 0, :]
+  template[:,0:-1, :] = point_cloud_transformed[:, 1:, :]
   print("template = ", template.shape)
   net_clip = model_part(template, is_training, k, bn_decay)
 
