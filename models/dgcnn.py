@@ -56,12 +56,8 @@ def model_part(edge_feature, is_training, k, stride, name, bn_decay=None):
                        scope=name + '_dgcnn4', bn_decay=bn_decay)
     net = tf.reduce_max(net, axis=-2, keep_dims=True)
     net4 = net
-    if stride == 1:
-        print("net1 = ", net1.shape)
-        print("net2 = ", net2.shape)
-        print("net3 = ", net3.shape)
-        print("net4 = ", net4.shape)
-        net = tf.concat([net1, net2, net3, net4], axis=-1)
+    # if stride == 1:
+    #     net = tf.concat([net1, net2, net3, net4], axis=-1)
     return net
 
 def get_model(point_cloud, is_training, bn_decay=None):
