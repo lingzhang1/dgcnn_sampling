@@ -83,7 +83,7 @@ def get_model(point_cloud, is_training, bn_decay=None):
 
     part1 = model_part(edge_feature[:,:-1,:], is_training, k, 2, "part1", bn_decay)
     part2 = model_part(edge_feature[:,1:,:], is_training, k, 2, "part2", bn_decay)
-    part3 = model_part(edge_feature, is_training, k, 1, "part3" bn_decay)
+    part3 = model_part(edge_feature, is_training, k, 1, "part3", bn_decay)
     print("part1 = ", part1)
     print("part2 = ", part2)
     print("part3 = ", part3)
