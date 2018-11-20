@@ -93,13 +93,13 @@ def get_model(point_cloud, is_training, bn_decay=None):
     net_p12 = tf_util.conv2d(part1_part2, 1024, [1, 1],
                        padding='VALID', stride=[1,1],
                        bn=True, is_training=is_training,
-                       scope='agg', bn_decay=bn_decay)
+                       scope='agg_12', bn_decay=bn_decay)
     net_p12 = tf.reduce_max(net_p12, axis=1, keep_dims=True)
 
     net_p3 = tf_util.conv2d(part3, 1024, [1, 1],
                        padding='VALID', stride=[1,1],
                        bn=True, is_training=is_training,
-                       scope='agg', bn_decay=bn_decay)
+                       scope='agg_3', bn_decay=bn_decay)
     net_p3 = tf.reduce_max(net_p3, axis=1, keep_dims=True)
     net = f.concat([net_p3, net_p12], axis=-1)
     print("net_312 = ", net.shape)
