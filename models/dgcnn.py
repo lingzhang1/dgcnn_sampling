@@ -16,11 +16,11 @@ def placeholder_inputs(batch_size, num_point):
     labels_pl = tf.placeholder(tf.int32, shape=(batch_size))
     return pointclouds_pl, labels_pl
 
-def model_part(edge_feature, is_training, k, stride, bn_decay=None):
+def model_part(edge_feature, is_training, k, stride, name, bn_decay=None):
     net = tf_util.conv2d(edge_feature, 64, [1,1],
                        padding='VALID', stride=[stride,1],
                        bn=True, is_training=is_training,
-                       scope='dgcnn1', bn_decay=bn_decay)
+                       scope=name + '_dgcnn1', bn_decay=bn_decay)
     net = tf.reduce_max(net, axis=-2, keep_dims=True)
     net1 = net
 
@@ -31,7 +31,7 @@ def model_part(edge_feature, is_training, k, stride, bn_decay=None):
     net = tf_util.conv2d(edge_feature, 64, [1,1],
                        padding='VALID', stride=[stride,1],
                        bn=True, is_training=is_training,
-                       scope='dgcnn2', bn_decay=bn_decay)
+                       scope=name + '_dgcnn2', bn_decay=bn_decay)
     net = tf.reduce_max(net, axis=-2, keep_dims=True)
     net2 = net
 
@@ -42,7 +42,7 @@ def model_part(edge_feature, is_training, k, stride, bn_decay=None):
     net = tf_util.conv2d(edge_feature, 64, [1,1],
                        padding='VALID', stride=[stride,1],
                        bn=True, is_training=is_training,
-                       scope='dgcnn3', bn_decay=bn_decay)
+                       scope=name + '_dgcnn3', bn_decay=bn_decay)
     net = tf.reduce_max(net, axis=-2, keep_dims=True)
     net3 = net
 
@@ -53,7 +53,7 @@ def model_part(edge_feature, is_training, k, stride, bn_decay=None):
     net = tf_util.conv2d(edge_feature, 128, [1,1],
                        padding='VALID', stride=[stride,1],
                        bn=True, is_training=is_training,
-                       scope='dgcnn4', bn_decay=bn_decay)
+                       scope=name + '_dgcnn4', bn_decay=bn_decay)
     net = tf.reduce_max(net, axis=-2, keep_dims=True)
     net4 = net
     if stride == 1:
@@ -81,9 +81,9 @@ def get_model(point_cloud, is_training, bn_decay=None):
     edge_feature = tf_util.get_edge_feature(point_cloud_transformed, nn_idx=nn_idx, k=k)
     print("edge_feature  = ", edge_feature.shape)
 
-    part1 = model_part(edge_feature[:,:-1,:], is_training, k, 2, bn_decay)
-    part2 = model_part(edge_feature[:,1:,:], is_training, k, 2, bn_decay)
-    part3 = model_part(edge_feature, is_training, k, 1, bn_decay)
+    part1 = model_part(edge_feature[:,:-1,:], is_training, k, 2, "part1", bn_decay)
+    part2 = model_part(edge_feature[:,1:,:], is_training, k, 2, "part2", bn_decay)
+    part3 = model_part(edge_feature, is_training, k, 1, "part3" bn_decay)
     print("part1 = ", part1)
     print("part2 = ", part2)
     print("part3 = ", part3)
