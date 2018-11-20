@@ -115,7 +115,7 @@ def get_model(point_cloud, is_training, bn_decay=None):
                        scope='dgcnn8', bn_decay=bn_decay)
   net_trans = tf.reduce_max(net_trans, axis=-2, keep_dims=True)
 
-  net_concate = tf.concat([net, net_trans], axis=2)
+  net_concate = tf.concat([net, net_trans], axis=1)
   print("net_concate = ", net_concate.shape)
   # net = tf_util.conv2d(tf.concat([net1, net2, net3, net4], axis=-1), 1024, [1, 1],
   net = tf_util.conv2d(net_concate, 1024, [1, 1],
