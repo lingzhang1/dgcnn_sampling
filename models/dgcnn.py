@@ -56,8 +56,8 @@ def model_part(edge_feature, is_training, k, stride, name, bn_decay=None):
                        scope=name + '_dgcnn4', bn_decay=bn_decay)
     net = tf.reduce_max(net, axis=-2, keep_dims=True)
     net4 = net
-    # if stride == 1:
-    #     net = tf.concat([net1, net2, net3, net4], axis=-1)
+    if stride == 1:
+        net = tf.concat([net1, net2, net3, net4], axis=-1)
     return net
 
 def get_model(point_cloud, is_training, bn_decay=None):
@@ -87,15 +87,21 @@ def get_model(point_cloud, is_training, bn_decay=None):
     print("part1 = ", part1.shape)
     print("part2 = ", part2.shape)
     print("part3 = ", part3.shape)
-    net_concate = tf.concat([part1, part2, part3], axis=1)
+    part1_part2 = tf.concat([part1, part2], axis=1)
     print("net_concate = ", net_concate.shape)
     # net = tf_util.conv2d(tf.concat([net1, net2, net3, net4], axis=-1), 1024, [1, 1],
-    net = tf_util.conv2d(net_concate, 1024, [1, 1],
+    net_p12 = tf_util.conv2d(part1_part2, 1024, [1, 1],
                        padding='VALID', stride=[1,1],
                        bn=True, is_training=is_training,
                        scope='agg', bn_decay=bn_decay)
+    net_p12 = tf.reduce_max(net_p12, axis=1, keep_dims=True)
 
-    net = tf.reduce_max(net, axis=1, keep_dims=True)
+    net_p3 = tf_util.conv2d(part3, 1024, [1, 1],
+                       padding='VALID', stride=[1,1],
+                       bn=True, is_training=is_training,
+                       scope='agg', bn_decay=bn_decay)
+    net_p3 = tf.reduce_max(net_p3, axis=1, keep_dims=True)
+    net = f.concat([net_p3, net_p12], axis=-1)
 
     # MLP on global point cloud vector
     net = tf.reshape(net, [batch_size, -1])
