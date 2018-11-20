@@ -88,7 +88,7 @@ def get_model(point_cloud, is_training, bn_decay=None):
     print("part2 = ", part2.shape)
     print("part3 = ", part3.shape)
     part1_part2 = tf.concat([part1, part2], axis=1)
-    print("net_concate = ", net_concate.shape)
+    print("part1_part2 = ", part1_part2.shape)
     # net = tf_util.conv2d(tf.concat([net1, net2, net3, net4], axis=-1), 1024, [1, 1],
     net_p12 = tf_util.conv2d(part1_part2, 1024, [1, 1],
                        padding='VALID', stride=[1,1],
@@ -102,7 +102,7 @@ def get_model(point_cloud, is_training, bn_decay=None):
                        scope='agg', bn_decay=bn_decay)
     net_p3 = tf.reduce_max(net_p3, axis=1, keep_dims=True)
     net = f.concat([net_p3, net_p12], axis=-1)
-
+    print("net_312 = ", net.shape)
     # MLP on global point cloud vector
     net = tf.reshape(net, [batch_size, -1])
     net = tf_util.fully_connected(net, 512, bn=True, is_training=is_training,
