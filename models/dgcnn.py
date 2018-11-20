@@ -101,7 +101,7 @@ def get_model(point_cloud, is_training, bn_decay=None):
                        bn=True, is_training=is_training,
                        scope='agg_3', bn_decay=bn_decay)
     net_p3 = tf.reduce_max(net_p3, axis=1, keep_dims=True)
-    net = f.concat([net_p3, net_p12], axis=-1)
+    net = tf.concat([net_p3, net_p12], axis=-1)
     print("net_312 = ", net.shape)
     # MLP on global point cloud vector
     net = tf.reshape(net, [batch_size, -1])
