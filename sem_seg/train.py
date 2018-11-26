@@ -17,7 +17,7 @@ import tf_util
 from model import *
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--num_gpu', type=int, default=1, help='the number of GPUs to use [default: 2]')
+parser.add_argument('--num_gpu', type=int, default=2, help='the number of GPUs to use [default: 2]')
 parser.add_argument('--log_dir', default='log', help='Log dir [default: log]')
 parser.add_argument('--num_point', type=int, default=4096, help='Point number [default: 4096]')
 parser.add_argument('--max_epoch', type=int, default=101, help='Epoch to run [default: 50]')
