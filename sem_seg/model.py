@@ -78,7 +78,7 @@ def model_part(point_cloud, is_training, k, bn_decay=None):
       # out_max = tf_util.max_pool2d(out8, [num_point,1], padding='VALID', scope='samp_maxpool')
       out_max = tf.reduce_max(out8, axis=1, keep_dims=True)
       print("out_max = ", out_max.shape)
-      return net
+      return out_max
 
 def get_model(point_cloud, is_training, bn_decay=None):
   """ ConvNet baseline, input is BxNx9 gray image """
