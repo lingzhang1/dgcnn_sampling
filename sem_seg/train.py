@@ -17,7 +17,7 @@ import tf_util
 from model import *
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--num_gpu', type=int, default=2, help='the number of GPUs to use [default: 2]')
+parser.add_argument('--num_gpu', type=int, default=0, help='the number of GPUs to use [default: 0]')
 parser.add_argument('--log_dir', default='log', help='Log dir [default: log]')
 parser.add_argument('--num_point', type=int, default=4096, help='Point number [default: 4096]')
 parser.add_argument('--max_epoch', type=int, default=101, help='Epoch to run [default: 50]')
@@ -44,8 +44,8 @@ DECAY_RATE = FLAGS.decay_rate
 
 LOG_DIR = FLAGS.log_dir
 if not os.path.exists(LOG_DIR): os.mkdir(LOG_DIR)
-os.system('cp model.py %s' % (LOG_DIR)) 
-os.system('cp train.py %s' % (LOG_DIR)) 
+os.system('cp model.py %s' % (LOG_DIR))
+os.system('cp train.py %s' % (LOG_DIR))
 LOG_FOUT = open(os.path.join(LOG_DIR, 'log_train.txt'), 'w')
 LOG_FOUT.write(str(FLAGS)+'\n')
 
@@ -59,8 +59,8 @@ BN_DECAY_CLIP = 0.99
 
 HOSTNAME = socket.gethostname()
 
-ALL_FILES = provider.getDataFiles('indoor3d_sem_seg_hdf5_data/all_files.txt') 
-room_filelist = [line.rstrip() for line in open('indoor3d_sem_seg_hdf5_data/room_filelist.txt')] 
+ALL_FILES = provider.getDataFiles('indoor3d_sem_seg_hdf5_data/all_files.txt')
+room_filelist = [line.rstrip() for line in open('indoor3d_sem_seg_hdf5_data/room_filelist.txt')]
 print len(room_filelist)
 
 # Load ALL data
@@ -106,7 +106,7 @@ def get_learning_rate(batch):
             DECAY_RATE,          # Decay rate.
             staircase=True)
   learning_rate = tf.maximum(learning_rate, 0.00001) # CLIP THE LEARNING RATE!!
-  return learning_rate        
+  return learning_rate
 
 def get_bn_decay(batch):
   bn_momentum = tf.train.exponential_decay(
@@ -128,7 +128,7 @@ def average_gradients(tower_grads):
     is over individual gradients. The inner list is over the gradient
     calculation for each tower.
   Returns:
-     List of pairs of (gradient, variable) where the gradient has been 
+     List of pairs of (gradient, variable) where the gradient has been
      averaged across all towers.
   """
   average_grads = []
@@ -155,15 +155,15 @@ def average_gradients(tower_grads):
 def train():
   with tf.Graph().as_default(), tf.device('/cpu:0'):
     batch = tf.Variable(0, trainable=False)
-    
+
     bn_decay = get_bn_decay(batch)
     tf.summary.scalar('bn_decay', bn_decay)
 
     learning_rate = get_learning_rate(batch)
     tf.summary.scalar('learning_rate', learning_rate)
-    
+
     trainer = tf.train.AdamOptimizer(learning_rate)
-    
+
     tower_grads = []
     pointclouds_phs = []
     labels_phs = []
@@ -173,14 +173,14 @@ def train():
       for i in xrange(FLAGS.num_gpu):
         with tf.device('/gpu:%d' % i):
           with tf.name_scope('%s_%d' % (TOWER_NAME, i)) as scope:
-      
+
             pointclouds_pl, labels_pl = placeholder_inputs(BATCH_SIZE, NUM_POINT)
             is_training_pl = tf.placeholder(tf.bool, shape=())
-            
+
             pointclouds_phs.append(pointclouds_pl)
             labels_phs.append(labels_pl)
             is_training_phs.append(is_training_pl)
-      
+
             pred = get_model(pointclouds_phs[-1], is_training_phs[-1], bn_decay=bn_decay)
             loss = get_loss(pred, labels_phs[-1])
             tf.summary.scalar('loss', loss)
@@ -194,13 +194,13 @@ def train():
             grads = trainer.compute_gradients(loss)
 
             tower_grads.append(grads)
-    
+
     grads = average_gradients(tower_grads)
 
     train_op = trainer.apply_gradients(grads, global_step=batch)
-    
+
     saver = tf.train.Saver(tf.global_variables(), sharded=True, max_to_keep=10)
-    
+
     # Create a session
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
@@ -230,9 +230,9 @@ def train():
     for epoch in range(MAX_EPOCH):
       log_string('**** EPOCH %03d ****' % (epoch))
       sys.stdout.flush()
-       
+
       train_one_epoch(sess, ops, train_writer)
-      
+
       # Save the variables to disk.
       if epoch % 10 == 0:
         save_path = saver.save(sess, os.path.join(LOG_DIR,'epoch_' + str(epoch)+'.ckpt'))
@@ -243,17 +243,17 @@ def train():
 def train_one_epoch(sess, ops, train_writer):
   """ ops: dict mapping from string to tf ops """
   is_training = True
-  
+
   log_string('----')
-  current_data, current_label, _ = provider.shuffle_data(train_data[:,0:NUM_POINT,:], train_label) 
-  
+  current_data, current_label, _ = provider.shuffle_data(train_data[:,0:NUM_POINT,:], train_label)
+
   file_size = current_data.shape[0]
-  num_batches = file_size // (FLAGS.num_gpu * BATCH_SIZE) 
-  
+  num_batches = file_size // (FLAGS.num_gpu * BATCH_SIZE)
+
   total_correct = 0
   total_seen = 0
   loss_sum = 0
-  
+
   for batch_idx in range(num_batches):
     if batch_idx % 100 == 0:
       print('Current batch/total batch num: %d/%d'%(batch_idx,num_batches))
@@ -261,8 +261,8 @@ def train_one_epoch(sess, ops, train_writer):
     end_idx_0 = (batch_idx+1) * BATCH_SIZE
     start_idx_1 = (batch_idx+1) * BATCH_SIZE
     end_idx_1 = (batch_idx+2) * BATCH_SIZE
-    
-    
+
+
     feed_dict = {ops['pointclouds_phs'][0]: current_data[start_idx_0:end_idx_0, :, :],
                  ops['pointclouds_phs'][1]: current_data[start_idx_1:end_idx_1, :, :],
                  ops['labels_phs'][0]: current_label[start_idx_0:end_idx_0],
@@ -277,7 +277,7 @@ def train_one_epoch(sess, ops, train_writer):
     total_correct += correct
     total_seen += (BATCH_SIZE*NUM_POINT)
     loss_sum += loss_val
-  
+
   log_string('mean loss: %f' % (loss_sum / float(num_batches)))
   log_string('accuracy: %f' % (total_correct / float(total_seen)))
 
