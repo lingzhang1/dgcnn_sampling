@@ -35,7 +35,7 @@ def model_part(point_cloud, is_training, k, bn_decay=None):
                            padding='VALID', stride=[2,1],
                            bn=True, is_training=is_training,
                            scope='samp_conv3', bn_decay=bn_decay, is_dist=True)
-      print("out3 = ", out3.shape)
+
       adj = tf_util.pairwise_distance(tf.squeeze(out3, axis=-2))
       nn_idx = tf_util.knn(adj, k=k)
       edge_feature = tf_util.get_edge_feature(out3, nn_idx=nn_idx, k=k)
@@ -52,7 +52,7 @@ def model_part(point_cloud, is_training, k, bn_decay=None):
                            padding='VALID', stride=[2,1],
                            bn=True, is_training=is_training,
                            scope='samp_conv5', bn_decay=bn_decay, is_dist=True)
-      print("out5 = ", out5.shape)
+
       adj = tf_util.pairwise_distance(tf.squeeze(out5, axis=-2))
       nn_idx = tf_util.knn(adj, k=k)
       edge_feature = tf_util.get_edge_feature(out5, nn_idx=nn_idx, k=k)
@@ -69,13 +69,12 @@ def model_part(point_cloud, is_training, k, bn_decay=None):
                            padding='VALID', stride=[2,1],
                            bn=True, is_training=is_training,
                            scope='samp_conv7', bn_decay=bn_decay, is_dist=True)
-      print("out7 = ", out7.shape)
+
       out8 = tf_util.conv2d(out7, 1024, [1, 1],
                            padding='VALID', stride=[1,1],
                            bn=True, is_training=is_training,
                            scope='samp_conv8', bn_decay=bn_decay, is_dist=True)
-      print("out8 = ", out8.shape)
-      # out_max = tf_util.max_pool2d(out8, [num_point,1], padding='VALID', scope='samp_maxpool')
+
       out_max = tf.reduce_max(out8, axis=1, keep_dims=True)
       print("out_max = ", out_max.shape)
       return out_max
@@ -169,12 +168,11 @@ def get_model(point_cloud, is_training, bn_decay=None):
   print("concat = ", concat.shape)
   # CONCAT
   globle_feat_expand = tf.tile(tf.reshape(globle_feat, [batch_size, 1, 1, -1]), [1, num_point, 1, 1])
-  print("pc_feat1_expand = ", globle_feat_expand.shape)
   points_feat1_concat = tf.concat(axis=3, values=[concat, globle_feat_expand])
   print("points_feat1_concat = ", points_feat1_concat.shape)
 
   # CONV
-  net = tf_util.conv2d(concat, 512, [1,1], padding='VALID', stride=[1,1],
+  net = tf_util.conv2d(points_feat1_concat, 512, [1,1], padding='VALID', stride=[1,1],
              bn=True, is_training=is_training, scope='seg/conv1', is_dist=True)
   net = tf_util.conv2d(net, 256, [1,1], padding='VALID', stride=[1,1],
              bn=True, is_training=is_training, scope='seg/conv2', is_dist=True)
