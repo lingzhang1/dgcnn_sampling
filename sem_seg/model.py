@@ -74,7 +74,7 @@ def model_part(point_cloud, is_training, k, bn_decay=None):
                            padding='VALID', stride=[1,1],
                            bn=True, is_training=is_training,
                            scope='samp_conv8', bn_decay=bn_decay, is_dist=True)
-
+      print("out8 = ", out8.shape)
       out_max = tf.reduce_max(out8, axis=1, keep_dims=True)
       print("out_max = ", out_max.shape)
       return out_max
