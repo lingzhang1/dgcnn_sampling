@@ -12,7 +12,7 @@ import tf_util
 from transform_nets import input_transform_net
 
 def model_part(point_cloud, is_training, weight_decay, k, bn_decay=None):
-  out1 = tf_util.conv2d(edge_feature, 64, [1,1],
+  out1 = tf_util.conv2d(point_cloud, 64, [1,1],
                        padding='VALID', stride=[1,1],
                        bn=True, is_training=is_training, weight_decay=weight_decay,
                        scope='samp_conv1', bn_decay=bn_decay, is_dist=True)
@@ -95,6 +95,7 @@ def get_model(point_cloud, input_label, is_training, cat_num, part_num, \
   nn_idx = tf_util.knn(adj, k=k)
   edge_feature = tf_util.get_edge_feature(input_image, nn_idx=nn_idx, k=k)
 
+  globle_feat = model_part(edge_feature, is_training, weight_decay, k, bn_decay)
   out1 = tf_util.conv2d(edge_feature, 64, [1,1],
                        padding='VALID', stride=[1,1],
                        bn=True, is_training=is_training, weight_decay=weight_decay,
@@ -174,7 +175,6 @@ def get_model(point_cloud, input_label, is_training, cat_num, part_num, \
                                      out7,
                                      out8])
 
-  globle_feat = model_part(point_cloud, is_training, weight_decay, k, bn_decay)
   print("concat = ", concat.shape)
   # CONCAT
   globle_feat_expand = tf.tile(tf.reshape(globle_feat, [batch_size, 1, 1, -1]), [1, num_point, 1, 1])
