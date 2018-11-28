@@ -64,7 +64,7 @@ def model_part(point_cloud, is_training, weight_decay, k, bn_decay=None):
                        bn=True, is_training=is_training, weight_decay=weight_decay,
                        scope='samp_conv7', bn_decay=bn_decay, is_dist=True)
 
-  out8 = tf_util.conv2d(tf.concat([out3, out5, out7], axis=-1), 1024, [1, 1],
+  out8 = tf_util.conv2d(out7, 1024, [1, 1],
                        padding='VALID', stride=[1,1],
                        bn=True, is_training=is_training,
                        scope='samp_conv13', bn_decay=bn_decay, is_dist=True)
