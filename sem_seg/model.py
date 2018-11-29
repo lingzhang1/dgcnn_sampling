@@ -89,7 +89,7 @@ def get_model(point_cloud, is_training, bn_decay=None):
   num_point = point_cloud.get_shape()[1].value
   input_image = tf.expand_dims(point_cloud, -1)
 
-  k = 20
+  k = 30
 
   adj = tf_util.pairwise_distance(point_cloud[:, :, 6:])
   nn_idx = tf_util.knn(adj, k=k) # (batch, num_points, k)
@@ -142,7 +142,7 @@ def get_model(point_cloud, is_training, bn_decay=None):
                        scope='adj_conv6', bn_decay=bn_decay, is_dist=True)
 
   out2_expand = tf.tile(tf.reshape(samp_out2, [batch_size, 1, 1, -1]), [1, num_point, 1, 1])
-  out2_concat = tf.concat(axis=3, values=[out5, out2_expand])
+  out2_concat = tf.concat(axis=3, values=[out6, out2_expand])
   out7 = tf_util.conv2d(out2_concat, 64, [1,1],
                        padding='VALID', stride=[1,1],
                        bn=True, is_training=is_training,
@@ -165,7 +165,7 @@ def get_model(point_cloud, is_training, bn_decay=None):
                        bn=True, is_training=is_training,
                        scope='adj_conv9', bn_decay=bn_decay, is_dist=True)
   out3_expand = tf.tile(tf.reshape(samp_out3, [batch_size, 1, 1, -1]), [1, num_point, 1, 1])
-  out3_concat = tf.concat(axis=3, values=[out7, out7_expand])
+  out3_concat = tf.concat(axis=3, values=[out9, out7_expand])
   out10 = tf_util.conv2d(out3_concat, 64, [1,1],
                        padding='VALID', stride=[1,1],
                        bn=True, is_training=is_training,
@@ -174,7 +174,7 @@ def get_model(point_cloud, is_training, bn_decay=None):
   out11 = tf_util.conv2d(tf.concat([out4, out7, out10], axis=-1), 1024, [1, 1],
                        padding='VALID', stride=[1,1],
                        bn=True, is_training=is_training,
-                       scope='adj_conv8', bn_decay=bn_decay, is_dist=True)
+                       scope='adj_conv11', bn_decay=bn_decay, is_dist=True)
 
   out_max = tf_util.max_pool2d(out11, [num_point,1], padding='VALID', scope='maxpool')
 
