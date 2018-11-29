@@ -17,7 +17,7 @@ def placeholder_inputs(batch_size, num_point):
   return pointclouds_pl, labels_pl
 
 def model_sampling(point_cloud, is_training, k, bn_decay=None):
-      net = tf_util.conv2d(edge_feature, 64, [1,1],
+      net = tf_util.conv2d(point_cloud, 64, [1,1],
                            padding='VALID', stride=[2,1],
                            bn=True, is_training=is_training,
                            scope='samp_dgcnn1', bn_decay=bn_decay)
