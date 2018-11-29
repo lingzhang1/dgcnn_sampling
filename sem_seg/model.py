@@ -165,7 +165,7 @@ def get_model(point_cloud, is_training, bn_decay=None):
                        bn=True, is_training=is_training,
                        scope='adj_conv9', bn_decay=bn_decay, is_dist=True)
   out3_expand = tf.tile(tf.reshape(samp_out3, [batch_size, 1, 1, -1]), [1, num_point, 1, 1])
-  out3_concat = tf.concat(axis=3, values=[out9, out7_expand])
+  out3_concat = tf.concat(axis=3, values=[out9, out3_expand])
   out10 = tf_util.conv2d(out3_concat, 64, [1,1],
                        padding='VALID', stride=[1,1],
                        bn=True, is_training=is_training,
