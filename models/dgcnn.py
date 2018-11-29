@@ -26,7 +26,7 @@ def model_sampling(point_cloud, is_training, k, bn_decay=None):
 
       print("net1 = ", net1.shape)
       out1_max = tf.reduce_max(net1, axis=1, keep_dims=True)
-      print("net1_max = ", net1_max.shape)
+      print("out1_max = ", out1_max.shape)
 
       adj_matrix = tf_util.pairwise_distance(net)
       nn_idx = tf_util.knn(adj_matrix, k=k)
