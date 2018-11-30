@@ -66,7 +66,11 @@ def get_model(point_cloud, is_training, bn_decay=None):
   net3 = net
 
 # down sampling
-  net = tf_util.conv2d(net3, 128, [1,1],
+  adj_matrix = tf_util.pairwise_distance(net)
+  nn_idx = tf_util.knn(adj_matrix, k=k)
+  edge_feature = tf_util.get_edge_feature(net, nn_idx=nn_idx, k=k)
+
+  net = tf_util.conv2d(edge_feature, 128, [1,1],
                        padding='VALID', stride=[2,1],
                        bn=True, is_training=is_training,
                        scope='dgcnn4', bn_decay=bn_decay)
