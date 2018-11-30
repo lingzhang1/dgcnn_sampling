@@ -104,8 +104,12 @@ def get_model(point_cloud, is_training, bn_decay=None):
                        bn=True, is_training=is_training,
                        scope='dgcnn7', bn_decay=bn_decay)
   net = tf.reduce_max(net, axis=-2, keep_dims=True)
-  net = tf.reduce_max(net, axis=1, keep_dims=True)
   net7 = net
+  net = tf_util.conv2d(net, 64, [1,1],
+                       padding='VALID', stride=[2,1],
+                       bn=True, is_training=is_training,
+                       scope='dgcnn7', bn_decay=bn_decay)
+  net = tf.reduce_max(net, axis=1, keep_dims=True)
 
   # CONCAT
   globle_feat_expand = tf.tile(tf.reshape(net, [batch_size, 1, 1, -1]), [1, num_point, 1, 1])
