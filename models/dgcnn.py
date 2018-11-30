@@ -16,11 +16,11 @@ def placeholder_inputs(batch_size, num_point):
   labels_pl = tf.placeholder(tf.int32, shape=(batch_size))
   return pointclouds_pl, labels_pl
 
-def model_sampling(point_cloud, is_training, k, bn_decay=None):
+def model_sampling(point_cloud, is_training, k, name, bn_decay=None):
       net = tf_util.conv2d(point_cloud, 64, [1,1],
                            padding='VALID', stride=[2,1],
                            bn=True, is_training=is_training,
-                           scope='samp_dgcnn1', bn_decay=bn_decay)
+                           scope=name+'samp_dgcnn1', bn_decay=bn_decay)
       net = tf.reduce_max(net, axis=-2, keep_dims=True)
       net1 = net
 
@@ -35,7 +35,7 @@ def model_sampling(point_cloud, is_training, k, bn_decay=None):
       net = tf_util.conv2d(edge_feature, 64, [1,1],
                            padding='VALID', stride=[2,1],
                            bn=True, is_training=is_training,
-                           scope='samp_dgcnn2', bn_decay=bn_decay)
+                           scope=name+'samp_dgcnn2', bn_decay=bn_decay)
       net = tf.reduce_max(net, axis=-2, keep_dims=True)
       net2 = net
       out2_max = tf.reduce_max(net2, axis=1, keep_dims=True)
@@ -47,7 +47,7 @@ def model_sampling(point_cloud, is_training, k, bn_decay=None):
       net = tf_util.conv2d(edge_feature, 64, [1,1],
                            padding='VALID', stride=[2,1],
                            bn=True, is_training=is_training,
-                           scope='samp_dgcnn3', bn_decay=bn_decay)
+                           scope=name+'samp_dgcnn3', bn_decay=bn_decay)
       net = tf.reduce_max(net, axis=-2, keep_dims=True)
       net3 = net
       out3_max = tf.reduce_max(net3, axis=1, keep_dims=True)
@@ -59,18 +59,18 @@ def model_sampling(point_cloud, is_training, k, bn_decay=None):
       net = tf_util.conv2d(edge_feature, 128, [1,1],
                            padding='VALID', stride=[1,1],
                            bn=True, is_training=is_training,
-                           scope='samp_dgcnn4', bn_decay=bn_decay)
+                           scope=name+'samp_dgcnn4', bn_decay=bn_decay)
       net = tf.reduce_max(net, axis=-2, keep_dims=True)
       net4 = net
 
       net = tf_util.conv2d(net, 1024, [1, 1],
                            padding='VALID', stride=[1,1],
                            bn=True, is_training=is_training,
-                           scope='samp_agg', bn_decay=bn_decay)
+                           scope=name+'samp_agg', bn_decay=bn_decay)
       net5 = net
       out5_max = tf.reduce_max(net5, axis=1, keep_dims=True)
 
-      return out5_max
+      return out1_max, out2_max, out3_max, out5_max
 
 def get_model(point_cloud, is_training, bn_decay=None):
   """ Classification PointNet, input is BxNx3, output Bx40 """
@@ -91,7 +91,14 @@ def get_model(point_cloud, is_training, bn_decay=None):
   nn_idx = tf_util.knn(adj_matrix, k=k)
   edge_feature = tf_util.get_edge_feature(point_cloud_transformed, nn_idx=nn_idx, k=k)
 
-  samp_net5 = model_sampling(edge_feature, is_training, k, bn_decay)
+  odd_net1, odd_net2, odd_net3, odd_net5 = model_sampling(edge_feature[:,:-1,:], is_training, k, 'odd_part', bn_decay)
+  even_net1, even_net2, even_net3, even_net5 = model_sampling(edge_feature[:,1:,:], is_training, k, 'even_part', bn_decay)
+  print("odd_net5 = ", odd_net5.shape)
+  odd_even1 = tf.concat([odd_net1, even_net1], axis=-1)
+  odd_even2 = tf.concat([odd_net2, even_net2], axis=-1)
+  odd_even3 = tf.concat([odd_net3, even_net3], axis=-1)
+  odd_even5 = tf.concat([odd_net5, even_net5], axis=-1)
+  print("odd_even5 = ", odd_even5.shape)
 
   net = tf_util.conv2d(edge_feature, 64, [1,1],
                        padding='VALID', stride=[1,1],
@@ -100,7 +107,7 @@ def get_model(point_cloud, is_training, bn_decay=None):
   net = tf.reduce_max(net, axis=-2, keep_dims=True)
   net1 = net
 
-  samp1_expand = tf.tile(tf.reshape(samp_net5, [batch_size, 1, 1, -1]), [1, num_point, 1, 1])
+  samp1_expand = tf.tile(tf.reshape(odd_even1, [batch_size, 1, 1, -1]), [1, num_point, 1, 1])
   samp1_concat = tf.concat(axis=3, values=[net, samp1_expand])
   print("samp1_concat = ", samp1_concat.shape)
 
@@ -120,14 +127,14 @@ def get_model(point_cloud, is_training, bn_decay=None):
   net = tf.reduce_max(net, axis=-2, keep_dims=True)
   net3 = net
 
-  # samp2_expand = tf.tile(tf.reshape(samp_net2, [batch_size, 1, 1, -1]), [1, num_point, 1, 1])
-  # samp2_concat = tf.concat(axis=3, values=[net, samp2_expand])
+  samp2_expand = tf.tile(tf.reshape(odd_even2, [batch_size, 1, 1, -1]), [1, num_point, 1, 1])
+  samp2_concat = tf.concat(axis=3, values=[net, samp2_expand])
 
-  # net = tf_util.conv2d(net, 64, [1,1],
-  #                      padding='VALID', stride=[1,1],
-  #                      bn=True, is_training=is_training,
-  #                      scope='dgcnn4', bn_decay=bn_decay)
-  # net4 = net
+  net = tf_util.conv2d(samp2_concat, 64, [1,1],
+                       padding='VALID', stride=[1,1],
+                       bn=True, is_training=is_training,
+                       scope='dgcnn4', bn_decay=bn_decay)
+  net4 = net
   adj_matrix = tf_util.pairwise_distance(net)
   nn_idx = tf_util.knn(adj_matrix, k=k)
   edge_feature = tf_util.get_edge_feature(net, nn_idx=nn_idx, k=k)
@@ -139,14 +146,14 @@ def get_model(point_cloud, is_training, bn_decay=None):
   net = tf.reduce_max(net, axis=-2, keep_dims=True)
   net5 = net
 
-  # samp3_expand = tf.tile(tf.reshape(samp_net3, [batch_size, 1, 1, -1]), [1, num_point, 1, 1])
-  # samp3_concat = tf.concat(axis=3, values=[net, samp3_expand])
+  samp3_expand = tf.tile(tf.reshape(odd_even3, [batch_size, 1, 1, -1]), [1, num_point, 1, 1])
+  samp3_concat = tf.concat(axis=3, values=[net, samp3_expand])
 
-  # net = tf_util.conv2d(net, 64, [1,1],
-  #                      padding='VALID', stride=[1,1],
-  #                      bn=True, is_training=is_training,
-  #                      scope='dgcnn6', bn_decay=bn_decay)
-  # net6 = net
+  net = tf_util.conv2d(samp3_concat, 64, [1,1],
+                       padding='VALID', stride=[1,1],
+                       bn=True, is_training=is_training,
+                       scope='dgcnn6', bn_decay=bn_decay)
+  net6 = net
 
   adj_matrix = tf_util.pairwise_distance(net)
   nn_idx = tf_util.knn(adj_matrix, k=k)
@@ -159,14 +166,15 @@ def get_model(point_cloud, is_training, bn_decay=None):
   net = tf.reduce_max(net, axis=-2, keep_dims=True)
   net7 = net
 
-  net = tf_util.conv2d(tf.concat([net2, net3, net5, net7], axis=-1), 1024, [1, 1],
+  net = tf_util.conv2d(tf.concat([net2, net4, net6, net7], axis=-1), 1024, [1, 1],
                        padding='VALID', stride=[1,1],
                        bn=True, is_training=is_training,
                        scope='agg', bn_decay=bn_decay)
 
   net = tf.reduce_max(net, axis=1, keep_dims=True)
-  samp5_concat = tf.concat(axis=3, values=[net, samp_net5])
-
+  samp5_concat = tf.concat(axis=3, values=[net, odd_even5])
+  print("samp5_concat = ", samp5_concat.shape)
+  
   # MLP on global point cloud vector
   net = tf.reshape(samp5_concat, [batch_size, -1])
   net = tf_util.fully_connected(net, 512, bn=True, is_training=is_training,
