@@ -65,7 +65,7 @@ def get_model(point_cloud, is_training, bn_decay=None):
   net = tf.reduce_max(net, axis=-2, keep_dims=True)
   net3 = net
 
-# down sampling
+  # down sampling
   adj_matrix = tf_util.pairwise_distance(net)
   nn_idx = tf_util.knn(adj_matrix, k=k)
   edge_feature = tf_util.get_edge_feature(net, nn_idx=nn_idx, k=k)
@@ -115,19 +115,30 @@ def get_model(point_cloud, is_training, bn_decay=None):
                        scope='dgcnn8', bn_decay=bn_decay)
   net = tf.reduce_max(net, axis=1, keep_dims=True)
   net8 = net
+
   # CONCAT
   globle_feat_expand = tf.tile(tf.reshape(net, [batch_size, 1, 1, -1]), [1, num_point, 1, 1])
   globle_feat1_concat = tf.concat(axis=3, values=[net3, globle_feat_expand])
   print("points_feat1_concat = ", globle_feat1_concat.shape)
 
-  net = tf_util.conv2d(globle_feat1_concat, 128, [1,1],
+  net = tf_util.conv2d(globle_feat1_concat, 64, [1,1],
                        padding='VALID', stride=[1,1],
                        bn=True, is_training=is_training,
                        scope='dgcnn9', bn_decay=bn_decay)
-  net = tf.reduce_max(net, axis=-2, keep_dims=True)
   net9 = net
 
-  net = tf_util.conv2d(tf.concat([net1, net2, net3, net9], axis=-1), 1024, [1, 1],
+  adj_matrix = tf_util.pairwise_distance(net)
+  nn_idx = tf_util.knn(adj_matrix, k=k)
+  edge_feature = tf_util.get_edge_feature(net, nn_idx=nn_idx, k=k)
+
+  net = tf_util.conv2d(globle_feat1_concat, 128, [1,1],
+                       padding='VALID', stride=[1,1],
+                       bn=True, is_training=is_training,
+                       scope='dgcnn10', bn_decay=bn_decay)
+  net = tf.reduce_max(net, axis=-2, keep_dims=True)
+  net10 = net
+
+  net = tf_util.conv2d(tf.concat([net1, net2, net3, net9, net10], axis=-1), 1024, [1, 1],
                        padding='VALID', stride=[1,1],
                        bn=True, is_training=is_training,
                        scope='agg', bn_decay=bn_decay)
