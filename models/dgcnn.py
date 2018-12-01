@@ -137,9 +137,9 @@ def get_model(point_cloud, is_training, bn_decay=None):
                        padding='VALID', stride=[1,1],
                        bn=True, is_training=is_training,
                        scope='dgcnn10', bn_decay=bn_decay)
-  net9 = net
+  net10 = net
 
-  net = tf_util.conv2d(tf.concat([net1, net2, net3, net4, net9], axis=-1), 1024, [1, 1],
+  net = tf_util.conv2d(tf.concat([net1, net2, net3, net4, net10], axis=-1), 1024, [1, 1],
                        padding='VALID', stride=[1,1],
                        bn=True, is_training=is_training,
                        scope='agg', bn_decay=bn_decay)
