@@ -78,8 +78,8 @@ def get_model(point_cloud, is_training, bn_decay=None):
   net4 = net
 
   adj_matrix = tf_util.pairwise_distance(net)
-  nn_idx = tf_util.knn(adj_matrix, k=k)
-  edge_feature = tf_util.get_edge_feature(net, nn_idx=nn_idx, k=k)
+  nn_idx = tf_util.knn(adj_matrix, k=k+10)
+  edge_feature = tf_util.get_edge_feature(net, nn_idx=nn_idx, k=k+10)
 
   net = tf_util.conv2d(net, 256, [1,1],
                        padding='VALID', stride=[2,1],
@@ -89,8 +89,8 @@ def get_model(point_cloud, is_training, bn_decay=None):
   net5 = net
 
   adj_matrix = tf_util.pairwise_distance(net)
-  nn_idx = tf_util.knn(adj_matrix, k=k)
-  edge_feature = tf_util.get_edge_feature(net, nn_idx=nn_idx, k=k)
+  nn_idx = tf_util.knn(adj_matrix, k=k+15)
+  edge_feature = tf_util.get_edge_feature(net, nn_idx=nn_idx, k=k+15)
 
   net = tf_util.conv2d(edge_feature, 512, [1,1],
                        padding='VALID', stride=[2,1],
@@ -100,8 +100,8 @@ def get_model(point_cloud, is_training, bn_decay=None):
   net6 = net
 
   adj_matrix = tf_util.pairwise_distance(net)
-  nn_idx = tf_util.knn(adj_matrix, k=k)
-  edge_feature = tf_util.get_edge_feature(net, nn_idx=nn_idx, k=k)
+  nn_idx = tf_util.knn(adj_matrix, k=k+15)
+  edge_feature = tf_util.get_edge_feature(net, nn_idx=nn_idx, k=k+15)
 
   net = tf_util.conv2d(edge_feature, 512, [1,1],
                        padding='VALID', stride=[1,1],
