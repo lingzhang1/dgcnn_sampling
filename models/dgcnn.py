@@ -65,21 +65,22 @@ def get_model(point_cloud, is_training, bn_decay=None):
   net = tf.reduce_max(net, axis=-2, keep_dims=True)
   net3 = net
 
-  # down sampling
   adj_matrix = tf_util.pairwise_distance(net)
   nn_idx = tf_util.knn(adj_matrix, k=k)
   edge_feature = tf_util.get_edge_feature(net, nn_idx=nn_idx, k=k)
 
   net = tf_util.conv2d(edge_feature, 128, [1,1],
-                       padding='VALID', stride=[2,1],
+                       padding='VALID', stride=[1,1],
                        bn=True, is_training=is_training,
                        scope='dgcnn4', bn_decay=bn_decay)
   net = tf.reduce_max(net, axis=-2, keep_dims=True)
   net4 = net
 
+  # down sampling
+
   adj_matrix = tf_util.pairwise_distance(net)
-  nn_idx = tf_util.knn(adj_matrix, k=k+10)
-  edge_feature = tf_util.get_edge_feature(net, nn_idx=nn_idx, k=k+10)
+  nn_idx = tf_util.knn(adj_matrix, k=k)
+  edge_feature = tf_util.get_edge_feature(net, nn_idx=nn_idx, k=k)
 
   net = tf_util.conv2d(net, 256, [1,1],
                        padding='VALID', stride=[2,1],
@@ -89,8 +90,8 @@ def get_model(point_cloud, is_training, bn_decay=None):
   net5 = net
 
   adj_matrix = tf_util.pairwise_distance(net)
-  nn_idx = tf_util.knn(adj_matrix, k=k+15)
-  edge_feature = tf_util.get_edge_feature(net, nn_idx=nn_idx, k=k+15)
+  nn_idx = tf_util.knn(adj_matrix, k=k)
+  edge_feature = tf_util.get_edge_feature(net, nn_idx=nn_idx, k=k)
 
   net = tf_util.conv2d(edge_feature, 512, [1,1],
                        padding='VALID', stride=[2,1],
@@ -100,44 +101,51 @@ def get_model(point_cloud, is_training, bn_decay=None):
   net6 = net
 
   adj_matrix = tf_util.pairwise_distance(net)
-  nn_idx = tf_util.knn(adj_matrix, k=k+15)
-  edge_feature = tf_util.get_edge_feature(net, nn_idx=nn_idx, k=k+15)
+  nn_idx = tf_util.knn(adj_matrix, k=k)
+  edge_feature = tf_util.get_edge_feature(net, nn_idx=nn_idx, k=k)
 
-  net = tf_util.conv2d(edge_feature, 512, [1,1],
-                       padding='VALID', stride=[1,1],
+  net = tf_util.conv2d(edge_feature, 1024, [1,1],
+                       padding='VALID', stride=[2,1],
                        bn=True, is_training=is_training,
                        scope='dgcnn7', bn_decay=bn_decay)
   net = tf.reduce_max(net, axis=-2, keep_dims=True)
   net7 = net
 
-  # CONCAT
-  # globle_feat_expand = tf.tile(tf.reshape(net, [batch_size, 1, 1, -1]), [1, num_point, 1, 1])
-  # globle_feat1_concat = tf.concat(axis=3, values=[net4, globle_feat_expand])
-  # print("points_feat1_concat = ", globle_feat1_concat.shape)
-  #
-  # net = tf_util.conv2d(globle_feat1_concat, 128, [1,1],
-  #                      padding='VALID', stride=[1,1],
-  #                      bn=True, is_training=is_training,
-  #                      scope='dgcnn10', bn_decay=bn_decay)
-  # net10 = net
+  adj_matrix = tf_util.pairwise_distance(net)
+  nn_idx = tf_util.knn(adj_matrix, k=k)
+  edge_feature = tf_util.get_edge_feature(net, nn_idx=nn_idx, k=k)
 
-  net = tf_util.conv2d(net, 1024, [1, 1],
+  net = tf_util.conv2d(edge_feature, 1024, [1,1],
+                       padding='VALID', stride=[1,1],
+                       bn=True, is_training=is_training,
+                       scope='dgcnn8', bn_decay=bn_decay)
+  net = tf.reduce_max(net, axis=-2, keep_dims=True)
+  net = tf.reduce_max(net, axis=1, keep_dims=True)
+  globle_feat = net
+
+  net = tf_util.conv2d(tf.concat([net1, net2, net3, net4], axis=-1), 1024, [1, 1],
                        padding='VALID', stride=[1,1],
                        bn=True, is_training=is_training,
                        scope='agg', bn_decay=bn_decay)
 
   net = tf.reduce_max(net, axis=1, keep_dims=True)
+  whole_info = net
+  global_concat = tf.concat([whole_info, globle_feat], axis=-1)
 
   # MLP on global point cloud vector
-  net = tf.reshape(net, [batch_size, -1])
-  net = tf_util.fully_connected(net, 512, bn=True, is_training=is_training,
+  net = tf.reshape(global_concat, [batch_size, -1])
+  net = tf_util.fully_connected(net, 1024, bn=True, is_training=is_training,
                                 scope='fc1', bn_decay=bn_decay)
   net = tf_util.dropout(net, keep_prob=0.5, is_training=is_training,
                          scope='dp1')
-  net = tf_util.fully_connected(net, 256, bn=True, is_training=is_training,
+  net = tf_util.fully_connected(net, 512, bn=True, is_training=is_training,
                                 scope='fc2', bn_decay=bn_decay)
   net = tf_util.dropout(net, keep_prob=0.5, is_training=is_training,
-                        scope='dp2')
+                         scope='dp2')
+  net = tf_util.fully_connected(net, 256, bn=True, is_training=is_training,
+                                scope='fc3', bn_decay=bn_decay)
+  net = tf_util.dropout(net, keep_prob=0.5, is_training=is_training,
+                        scope='dp3')
   net = tf_util.fully_connected(net, 40, activation_fn=None, scope='fc3')
 
   return net, end_points
