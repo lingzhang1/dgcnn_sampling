@@ -104,7 +104,7 @@ def get_model(point_cloud, is_training, bn_decay=None):
   nn_idx = tf_util.knn(adj_matrix, k=k)
   edge_feature = tf_util.get_edge_feature(net, nn_idx=nn_idx, k=k)
 
-  net = tf_util.conv2d(edge_feature, 1024, [1,1],
+  net = tf_util.conv2d(edge_feature, 512, [1,1],
                        padding='VALID', stride=[2,1],
                        bn=True, is_training=is_training,
                        scope='dgcnn7', bn_decay=bn_decay)
@@ -115,11 +115,18 @@ def get_model(point_cloud, is_training, bn_decay=None):
   nn_idx = tf_util.knn(adj_matrix, k=k)
   edge_feature = tf_util.get_edge_feature(net, nn_idx=nn_idx, k=k)
 
+  net = tf_util.conv2d(edge_feature, 512, [1,1],
+                       padding='VALID', stride=[1,1],
+                       bn=True, is_training=is_training,
+                       scope='dgcnn8', bn_decay=bn_decay)
+  net = tf.reduce_max(net, axis=-2, keep_dims=True)
+
   net = tf_util.conv2d(edge_feature, 1024, [1,1],
                        padding='VALID', stride=[1,1],
                        bn=True, is_training=is_training,
                        scope='dgcnn8', bn_decay=bn_decay)
   net = tf.reduce_max(net, axis=-2, keep_dims=True)
+
   net = tf.reduce_max(net, axis=1, keep_dims=True)
   globle_feat = net
 
@@ -146,7 +153,7 @@ def get_model(point_cloud, is_training, bn_decay=None):
                                 scope='fc3', bn_decay=bn_decay)
   net = tf_util.dropout(net, keep_prob=0.5, is_training=is_training,
                         scope='dp3')
-  net = tf_util.fully_connected(net, 40, activation_fn=None, scope='fc3')
+  net = tf_util.fully_connected(net, 40, activation_fn=None, scope='fc4')
 
   return net, end_points
 
