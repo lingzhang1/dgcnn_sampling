@@ -138,6 +138,7 @@ def get_model(point_cloud, is_training, bn_decay=None):
   net = tf.reduce_max(net, axis=1, keep_dims=True)
   whole_info = net
   global_concat = tf.concat([whole_info, globle_feat], axis=-1)
+  print("global_concat = ", global_concat.shape)
 
   # MLP on global point cloud vector
   net = tf.reshape(global_concat, [batch_size, -1])
