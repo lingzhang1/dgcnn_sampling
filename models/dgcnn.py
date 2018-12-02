@@ -124,7 +124,7 @@ def get_model(point_cloud, is_training, bn_decay=None):
   net = tf_util.conv2d(edge_feature, 1024, [1,1],
                        padding='VALID', stride=[1,1],
                        bn=True, is_training=is_training,
-                       scope='dgcnn8', bn_decay=bn_decay)
+                       scope='dgcnn9', bn_decay=bn_decay)
   net = tf.reduce_max(net, axis=-2, keep_dims=True)
 
   net = tf.reduce_max(net, axis=1, keep_dims=True)
