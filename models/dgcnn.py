@@ -75,6 +75,14 @@ def get_model(point_cloud, is_training, bn_decay=None):
   # MLP on global point cloud vector
   net = tf.reshape(net, [batch_size, -1])
   print("fully_connected = ", net.shape)
+  net = tf_util.fully_connected(net, 4096, bn=True, is_training=is_training,
+                                scope='fc_2', bn_decay=bn_decay)
+  net = tf_util.dropout(net, keep_prob=0.5, is_training=is_training,
+                         scope='dp_2')
+  net = tf_util.fully_connected(net, 2048, bn=True, is_training=is_training,
+                                scope='fc_1', bn_decay=bn_decay)
+  net = tf_util.dropout(net, keep_prob=0.5, is_training=is_training,
+                         scope='dp_1')
   net = tf_util.fully_connected(net, 1024, bn=True, is_training=is_training,
                                 scope='fc1', bn_decay=bn_decay)
   net = tf_util.dropout(net, keep_prob=0.5, is_training=is_training,
