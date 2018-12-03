@@ -8,7 +8,11 @@ Upadted by Yue Wang and Yongbin Sun
 
 import numpy as np
 import tensorflow as tf
-import tensorflow_transform as tft
+try:
+  import tensorflow_transform as tft
+except ImportError:
+  # this will take a minute, ignore the warnings
+  !pip install -q tensorflow-transform
 
 def _variable_on_cpu(name, shape, initializer, use_fp16=False, trainable=True):
   """Helper to create a Variable stored on CPU memory.
