@@ -40,30 +40,17 @@ def get_model(point_cloud, is_training, bn_decay=None):
                        padding='VALID', stride=[1,1],
                        bn=True, is_training=is_training,
                        scope='dgcnn1', bn_decay=bn_decay)
-  net = tf.reduce_max(net, axis=-2, keep_dims=True)
-  net1 = net
-
-  adj_matrix = tf_util.pairwise_distance(net)
-  nn_idx = tf_util.knn(adj_matrix, k=k)
-  edge_feature = tf_util.get_edge_feature(net, nn_idx=nn_idx, k=k)
 
   net = tf_util.conv2d(edge_feature, 64, [1,1],
                        padding='VALID', stride=[1,1],
                        bn=True, is_training=is_training,
                        scope='dgcnn2', bn_decay=bn_decay)
-  net = tf.reduce_max(net, axis=-2, keep_dims=True)
-  net2 = net
-
-  adj_matrix = tf_util.pairwise_distance(net)
-  nn_idx = tf_util.knn(adj_matrix, k=k)
-  edge_feature = tf_util.get_edge_feature(net, nn_idx=nn_idx, k=k)
 
   net = tf_util.conv2d(edge_feature, 64, [1,1],
                        padding='VALID', stride=[2,1],
                        bn=True, is_training=is_training,
                        scope='dgcnn3', bn_decay=bn_decay)
   net = tf.reduce_max(net, axis=-2, keep_dims=True)
-  net3 = net
 
   adj_matrix = tf_util.pairwise_distance(net)
   nn_idx = tf_util.knn(adj_matrix, k=k)
@@ -73,30 +60,17 @@ def get_model(point_cloud, is_training, bn_decay=None):
                        padding='VALID', stride=[1,1],
                        bn=True, is_training=is_training,
                        scope='dgcnn4', bn_decay=bn_decay)
-  net = tf.reduce_max(net, axis=-2, keep_dims=True)
-  net4 = net
-
-  adj_matrix = tf_util.pairwise_distance(net)
-  nn_idx = tf_util.knn(adj_matrix, k=k)
-  edge_feature = tf_util.get_edge_feature(net, nn_idx=nn_idx, k=k)
 
   net = tf_util.conv2d(edge_feature, 64, [1,1],
                        padding='VALID', stride=[1,1],
                        bn=True, is_training=is_training,
                        scope='dgcnn5', bn_decay=bn_decay)
-  net = tf.reduce_max(net, axis=-2, keep_dims=True)
-  net5 = net
-
-  adj_matrix = tf_util.pairwise_distance(net)
-  nn_idx = tf_util.knn(adj_matrix, k=k)
-  edge_feature = tf_util.get_edge_feature(net, nn_idx=nn_idx, k=k)
 
   net = tf_util.conv2d(edge_feature, 64, [1,1],
                        padding='VALID', stride=[2,1],
                        bn=True, is_training=is_training,
                        scope='dgcnn6', bn_decay=bn_decay)
   net = tf.reduce_max(net, axis=-2, keep_dims=True)
-  net6 = net
 
   adj_matrix = tf_util.pairwise_distance(net)
   nn_idx = tf_util.knn(adj_matrix, k=k)
@@ -106,26 +80,17 @@ def get_model(point_cloud, is_training, bn_decay=None):
                        padding='VALID', stride=[1,1],
                        bn=True, is_training=is_training,
                        scope='dgcnn7', bn_decay=bn_decay)
-  net = tf.reduce_max(net, axis=-2, keep_dims=True)
-  net7 = net
-
-  adj_matrix = tf_util.pairwise_distance(net)
-  nn_idx = tf_util.knn(adj_matrix, k=k)
-  edge_feature = tf_util.get_edge_feature(net, nn_idx=nn_idx, k=k)
 
   net = tf_util.conv2d(edge_feature, 64, [1,1],
                        padding='VALID', stride=[1,1],
                        bn=True, is_training=is_training,
                        scope='dgcnn8', bn_decay=bn_decay)
-  net = tf.reduce_max(net, axis=-2, keep_dims=True)
-  net8 = net
 
   net = tf_util.conv2d(edge_feature, 64, [1,1],
                        padding='VALID', stride=[2,1],
                        bn=True, is_training=is_training,
-                       scope='dgcnn8', bn_decay=bn_decay)
+                       scope='dgcnn9', bn_decay=bn_decay)
   net = tf.reduce_max(net, axis=-2, keep_dims=True)
-  net8 = net
 
   adj_matrix = tf_util.pairwise_distance(net)
   nn_idx = tf_util.knn(adj_matrix, k=k)
@@ -134,15 +99,14 @@ def get_model(point_cloud, is_training, bn_decay=None):
   net = tf_util.conv2d(net, 64, [1, 1],
                        padding='VALID', stride=[1,1],
                        bn=True, is_training=is_training,
-                       scope='agg_1', bn_decay=bn_decay)
+                       scope='dgcnn10', bn_decay=bn_decay)
   net = tf.reduce_max(net, axis=-2, keep_dims=True)
-  net9 = net
+
   # fully_connected layer
   # net = tf.layers.flatten(net)
-  # globle_feat = net
-
   # MLP on global point cloud vector
   net = tf.reshape(net, [batch_size, -1])
+  print("fully_connected = ", net.shape)
   net = tf_util.fully_connected(net, 1024, bn=True, is_training=is_training,
                                 scope='fc1', bn_decay=bn_decay)
   net = tf_util.dropout(net, keep_prob=0.5, is_training=is_training,
