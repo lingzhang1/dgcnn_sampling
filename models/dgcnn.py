@@ -72,6 +72,26 @@ def get_model(point_cloud, is_training, bn_decay=None):
                        scope='dgcnn7', bn_decay=bn_decay)
   net = tf.reduce_max(net, axis=-2, keep_dims=True)
 
+  adj_matrix = tf_util.pairwise_distance(net)
+  nn_idx = tf_util.knn(adj_matrix, k=k)
+  edge_feature = tf_util.get_edge_feature(net, nn_idx=nn_idx, k=k)
+
+  net = tf_util.conv2d(net, 64, [1, 1],
+                       padding='VALID', stride=[1,1],
+                       bn=True, is_training=is_training,
+                       scope='dgcnn7', bn_decay=bn_decay)
+  net = tf.reduce_max(net, axis=-2, keep_dims=True)
+
+  adj_matrix = tf_util.pairwise_distance(net)
+  nn_idx = tf_util.knn(adj_matrix, k=k)
+  edge_feature = tf_util.get_edge_feature(net, nn_idx=nn_idx, k=k)
+
+  net = tf_util.conv2d(net, 64, [1, 1],
+                       padding='VALID', stride=[1,1],
+                       bn=True, is_training=is_training,
+                       scope='dgcnn7', bn_decay=bn_decay)
+  net = tf.reduce_max(net, axis=-2, keep_dims=True)
+
   # fully_connected layer
   # net = tf.layers.flatten(net)
   # MLP on global point cloud vector
