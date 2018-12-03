@@ -8,6 +8,7 @@ Upadted by Yue Wang and Yongbin Sun
 
 import numpy as np
 import tensorflow as tf
+import tensorflow_transform as tft
 
 def _variable_on_cpu(name, shape, initializer, use_fp16=False, trainable=True):
   """Helper to create a Variable stored on CPU memory.
@@ -702,6 +703,10 @@ def get_edge_feature(point_cloud, nn_idx, k=20):
   print("point_cloud_flat = ", point_cloud_flat.shape)
   point_cloud_neighbors = tf.gather(point_cloud_flat, nn_idx+idx_)
   print("point_cloud_neighbors = ", point_cloud_neighbors.shape)
+
+  neighbors_covariance = tft.covariance(point_cloud_neighbors)
+  print("neighbors_covariance = ", neighbors_covariance.shape)
+
   point_cloud_central = tf.expand_dims(point_cloud_central, axis=-2)
   print("point_cloud_central_2 = ", point_cloud_central.shape)
   point_cloud_central = tf.tile(point_cloud_central, [1, 1, k, 1])
