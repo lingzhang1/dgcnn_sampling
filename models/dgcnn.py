@@ -37,7 +37,7 @@ def get_model(point_cloud, is_training, bn_decay=None):
   edge_feature = tf_util.get_edge_feature(point_cloud_transformed, nn_idx=nn_idx, k=k)
 
   net = tf_util.conv2d(edge_feature, 64, [1,1],
-                       padding='VALID', stride=[4,1],
+                       padding='VALID', stride=[1,1],
                        bn=True, is_training=is_training,
                        scope='dgcnn1', bn_decay=bn_decay)
   net = tf.reduce_max(net, axis=-2, keep_dims=True)
