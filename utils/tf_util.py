@@ -704,7 +704,7 @@ def get_edge_feature(point_cloud, nn_idx, k=20):
   point_cloud_neighbors = tf.gather(point_cloud_flat, nn_idx+idx_)
   print("point_cloud_neighbors = ", point_cloud_neighbors.shape)
 
-  neighbors_covariance = tft.covariance(point_cloud_neighbors)
+  neighbors_covariance = tft.covariance(point_cloud_neighbors, tf.float32)
   print("neighbors_covariance = ", neighbors_covariance.shape)
 
   point_cloud_central = tf.expand_dims(point_cloud_central, axis=-2)
