@@ -680,7 +680,7 @@ def get_edge_feature(point_cloud, nn_idx, k=20):
   edge_feature = tf.concat([point_cloud_central, point_cloud_neighbors - point_cloud_central], axis=-1)
 
   for i in range(k):
-      for j = i + 1 in range(k):
+      for j in range(i+1, k):
           feat = tf.concat([point_cloud_neighbors[:, :, i, :], point_cloud_neighbors[:, :, j, :] - point_cloud_neighbors[:, :, i, :]], axis=-1)
           edge_feature = tf.concat([edge_feature, feat], axis=-2)
   print("edge_feature = ", edge_feature.shape)
