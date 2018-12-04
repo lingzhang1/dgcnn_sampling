@@ -668,7 +668,7 @@ def knn(adj_matrix, k=20):
     nearest neighbors: (batch_size, num_points, k)
   """
   neg_adj = -adj_matrix
-  _, nn_idx = tf.nn.top_k(neg_adj, k=k)
+  _, 2 = tf.nn.top_k(neg_adj, k=k)
   return nn_idx
 
 
@@ -704,7 +704,7 @@ def get_edge_feature(point_cloud, nn_idx, k=20):
   point_cloud_neighbors = tf.gather(point_cloud_flat, nn_idx+idx_)
   print("point_cloud_neighbors = ", point_cloud_neighbors.shape)
 
-  neighbors_covariance = tft.covariance(point_cloud_neighbors, tf.float32)
+  neighbors_covariance = tft.covariance(nn_idx, tf.float32)
   print("neighbors_covariance = ", neighbors_covariance.shape)
 
   point_cloud_central = tf.expand_dims(point_cloud_central, axis=-2)
