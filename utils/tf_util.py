@@ -712,7 +712,7 @@ def get_edge_feature(point_cloud, nn_idx, k=20):
   all_points_flat = tf.reshape(all_points, [-1, k + 1, num_dims])
   print("all_points_flat = ", all_points_flat.shape)
 
-  matrix = np.zeros((num_points * batch_size, num_dims))
+  matrix = np.zeros((num_points * batch_size, num_dims), dtype = float32)
   normals = tf.Variable(matrix);
 
   for i in range(num_points * batch_size):
