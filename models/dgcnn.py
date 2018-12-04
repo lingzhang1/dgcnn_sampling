@@ -22,7 +22,7 @@ def get_model(point_cloud, is_training, bn_decay=None):
   batch_size = point_cloud.get_shape()[0].value
   num_point = point_cloud.get_shape()[1].value
   end_points = {}
-  k = 20
+  k = 9
 
   adj_matrix = tf_util.pairwise_distance(point_cloud)
   nn_idx = tf_util.knn(adj_matrix, k=k)
