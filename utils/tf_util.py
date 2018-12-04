@@ -1,14 +1,11 @@
 """ Wrapper functions for TensorFlow layers.
-
 Author: Charles R. Qi
 Date: November 2016
-
 Upadted by Yue Wang and Yongbin Sun
 """
 
 import numpy as np
 import tensorflow as tf
-import tensorflow_transform as tft
 
 def _variable_on_cpu(name, shape, initializer, use_fp16=False, trainable=True):
   """Helper to create a Variable stored on CPU memory.
@@ -26,10 +23,8 @@ def _variable_on_cpu(name, shape, initializer, use_fp16=False, trainable=True):
 
 def _variable_with_weight_decay(name, shape, stddev, wd, use_xavier=True):
   """Helper to create an initialized Variable with weight decay.
-
   Note that the Variable is initialized with a truncated normal distribution.
   A weight decay is added only if one is specified.
-
   Args:
     name: name of the variable
     shape: list of ints
@@ -37,7 +32,6 @@ def _variable_with_weight_decay(name, shape, stddev, wd, use_xavier=True):
     wd: add L2Loss weight decay multiplied by this float. If None, weight
         decay is not added for this Variable.
     use_xavier: bool, whether to use xavier initializer
-
   Returns:
     Variable Tensor
   """
@@ -67,7 +61,6 @@ def conv1d(inputs,
            is_training=None,
            is_dist=False):
   """ 1D convolution with non-linear operation.
-
   Args:
     inputs: 3-D tensor variable BxLxC
     num_output_channels: int
@@ -82,7 +75,6 @@ def conv1d(inputs,
     bn: bool, whether to use batch norm
     bn_decay: float or float tensor variable in [0,1]
     is_training: bool Tensor variable
-
   Returns:
     Variable tensor
   """
@@ -128,7 +120,6 @@ def conv2d(inputs,
            is_training=None,
            is_dist=False):
   """ 2D convolution with non-linear operation.
-
   Args:
     inputs: 4-D tensor variable BxHxWxC
     num_output_channels: int
@@ -143,7 +134,6 @@ def conv2d(inputs,
     bn: bool, whether to use batch norm
     bn_decay: float or float tensor variable in [0,1]
     is_training: bool Tensor variable
-
   Returns:
     Variable tensor
   """
@@ -189,7 +179,6 @@ def conv2d_transpose(inputs,
                      is_training=None,
                      is_dist=False):
   """ 2D convolution transpose with non-linear operation.
-
   Args:
     inputs: 4-D tensor variable BxHxWxC
     num_output_channels: int
@@ -204,10 +193,8 @@ def conv2d_transpose(inputs,
     bn: bool, whether to use batch norm
     bn_decay: float or float tensor variable in [0,1]
     is_training: bool Tensor variable
-
   Returns:
     Variable tensor
-
   Note: conv2d(conv2d_transpose(a, num_out, ksize, stride), a.shape[-1], ksize, stride) == a
   """
   with tf.variable_scope(scope) as sc:
@@ -270,7 +257,6 @@ def conv3d(inputs,
            is_training=None,
            is_dist=False):
   """ 3D convolution with non-linear operation.
-
   Args:
     inputs: 5-D tensor variable BxDxHxWxC
     num_output_channels: int
@@ -285,7 +271,6 @@ def conv3d(inputs,
     bn: bool, whether to use batch norm
     bn_decay: float or float tensor variable in [0,1]
     is_training: bool Tensor variable
-
   Returns:
     Variable tensor
   """
@@ -361,7 +346,6 @@ def max_pool2d(inputs,
                stride=[2, 2],
                padding='VALID'):
   """ 2D max pooling.
-
   Args:
     inputs: 4-D tensor BxHxWxC
     kernel_size: a list of 2 ints
@@ -386,7 +370,6 @@ def avg_pool2d(inputs,
                stride=[2, 2],
                padding='VALID'):
   """ 2D avg pooling.
-
   Args:
     inputs: 4-D tensor BxHxWxC
     kernel_size: a list of 2 ints
@@ -412,7 +395,6 @@ def max_pool3d(inputs,
                stride=[2, 2, 2],
                padding='VALID'):
   """ 3D max pooling.
-
   Args:
     inputs: 5-D tensor BxDxHxWxC
     kernel_size: a list of 3 ints
@@ -437,7 +419,6 @@ def avg_pool3d(inputs,
                stride=[2, 2, 2],
                padding='VALID'):
   """ 3D avg pooling.
-
   Args:
     inputs: 5-D tensor BxDxHxWxC
     kernel_size: a list of 3 ints
@@ -618,14 +599,12 @@ def dropout(inputs,
             keep_prob=0.5,
             noise_shape=None):
   """ Dropout layer.
-
   Args:
     inputs: tensor
     is_training: boolean tf.Variable
     scope: string
     keep_prob: float in [0,1]
     noise_shape: list of ints
-
   Returns:
     tensor variable
   """
@@ -638,10 +617,8 @@ def dropout(inputs,
 
 def pairwise_distance(point_cloud):
   """Compute pairwise distance of a point cloud.
-
   Args:
     point_cloud: tensor (batch_size, num_points, num_dims)
-
   Returns:
     pairwise distance: (batch_size, num_points, num_points)
   """
@@ -663,7 +640,6 @@ def knn(adj_matrix, k=20):
   Args:
     pairwise distance: (batch_size, num_points, num_points)
     k: int
-
   Returns:
     nearest neighbors: (batch_size, num_points, k)
   """
@@ -678,7 +654,6 @@ def get_edge_feature(point_cloud, nn_idx, k=20):
     point_cloud: (batch_size, num_points, 1, num_dims)
     nn_idx: (batch_size, num_points, k)
     k: int
-
   Returns:
     edge features: (batch_size, num_points, k, num_dims)
   """
@@ -688,7 +663,6 @@ def get_edge_feature(point_cloud, nn_idx, k=20):
     point_cloud = tf.expand_dims(point_cloud, 0)
 
   point_cloud_central = point_cloud
-  print("point_cloud_central = ", point_cloud_central.shape)
 
   point_cloud_shape = point_cloud.get_shape()
   batch_size = point_cloud_shape[0].value
@@ -696,36 +670,13 @@ def get_edge_feature(point_cloud, nn_idx, k=20):
   num_dims = point_cloud_shape[2].value
 
   idx_ = tf.range(batch_size) * num_points
-  print("idx_ = ", idx_.shape)
   idx_ = tf.reshape(idx_, [batch_size, 1, 1])
-  print("idx_ = ", idx_.shape)
 
   point_cloud_flat = tf.reshape(point_cloud, [-1, num_dims])
-  print("point_cloud_flat = ", point_cloud_flat.shape)
   point_cloud_neighbors = tf.gather(point_cloud_flat, nn_idx+idx_)
-  print("point_cloud_neighbors = ", point_cloud_neighbors.shape)
-
   point_cloud_central = tf.expand_dims(point_cloud_central, axis=-2)
-  print("point_cloud_central_2 = ", point_cloud_central.shape)
 
-  all_points = tf.concat([point_cloud_central, point_cloud_neighbors], axis=-2)
-  all_points_flat = tf.reshape(all_points, [-1, k + 1, num_dims])
-  print("all_points_flat = ", all_points_flat.shape)
+  point_cloud_central = tf.tile(point_cloud_central, [1, 1, k, 1])
 
-  matrix = np.zeros((num_points * batch_size, num_dims), dtype =np.float32)
-  normals = tf.Variable(matrix);
-
-  for i in range(num_points * batch_size):
-      neighbors_covariance = tft.covariance(all_points_flat[i, :, :], tf.float32)
-      e, v = tf.linalg.eigh(neighbors_covariance)
-      normals[i].assign(v)
-      # print("v = ", v.shape)
-  print("normals = ", normals.shape)
-  normals = tf.reshape(normals, [batch_size, num_points, num_dims])
-
-  # point_cloud_central = tf.tile(point_cloud_central, [1, 1, k, 1])
-  point_cloud_central = tf.squeeze(point_cloud_central)
-  print("point_cloud_central_3 = ", point_cloud_central.shape)
-
-  edge_feature = tf.concat([point_cloud_central, normals], axis=-1)
+  edge_feature = tf.concat([point_cloud_central, point_cloud_neighbors], axis=-1)
   return edge_feature
