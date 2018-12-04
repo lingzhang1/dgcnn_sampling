@@ -721,9 +721,11 @@ def get_edge_feature(point_cloud, nn_idx, k=20):
       normals[i].assign(v)
       # print("v = ", v.shape)
   print("normals = ", normals.shape)
+  normals = tf.reshape(normals, [batch_size, num_points, num_dims])
 
-  point_cloud_central = tf.tile(point_cloud_central, [1, 1, k, 1])
+  # point_cloud_central = tf.tile(point_cloud_central, [1, 1, k, 1])
+  point_cloud_central = tf.squeeze(point_cloud_central)
   print("point_cloud_central_3 = ", point_cloud_central.shape)
 
-  edge_feature = tf.concat([point_cloud_central, point_cloud_neighbors-point_cloud_central], axis=-1)
+  edge_feature = tf.concat([point_cloud_central, normals], axis=-1)
   return edge_feature
