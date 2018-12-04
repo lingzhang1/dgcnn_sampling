@@ -668,7 +668,7 @@ def knn(adj_matrix, k=20):
     nearest neighbors: (batch_size, num_points, k)
   """
   neg_adj = -adj_matrix
-  _, 2 = tf.nn.top_k(neg_adj, k=k)
+  _, nn_idx = tf.nn.top_k(neg_adj, k=k)
   return nn_idx
 
 
