@@ -674,14 +674,15 @@ def get_edge_feature(point_cloud, nn_idx, k=20):
 
   point_cloud_flat = tf.reshape(point_cloud, [-1, num_dims])
   point_cloud_neighbors = tf.gather(point_cloud_flat, nn_idx+idx_)
-  point_cloud_central = tf.expand_dims(point_cloud_central, axis=-2)
 
+  point_cloud_central = tf.expand_dims(point_cloud_central, axis=-2)
   point_cloud_central = tf.tile(point_cloud_central, [1, 1, k, 1])
+
   edge_feature = tf.concat([point_cloud_central, point_cloud_neighbors - point_cloud_central], axis=-1)
 
   for i in range(k):
       for j in range(i+1, k):
-          feat = tf.concat([point_cloud_neighbors[:, :, i, :], point_cloud_neighbors[:, :, j, :] - point_cloud_neighbors[:, :, i, :]], axis=-1)
+          feat = tf.concat([point_cloud_central[:, :, i, :], point_cloud_neighbors[:, :, j, :] - point_cloud_neighbors[:, :, i, :]], axis=-1)
           feat = tf.expand_dims(feat, axis=-2)
           edge_feature = tf.concat([edge_feature, feat], axis=-2)
   print("edge_feature = ", edge_feature.shape)
