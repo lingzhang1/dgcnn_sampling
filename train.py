@@ -26,7 +26,7 @@ parser.add_argument('--momentum', type=float, default=0.9, help='Initial learnin
 parser.add_argument('--optimizer', default='adam', help='adam or momentum [default: adam]')
 parser.add_argument('--decay_step', type=int, default=200000, help='Decay step for lr decay [default: 200000]')
 parser.add_argument('--decay_rate', type=float, default=0.7, help='Decay rate for lr decay [default: 0.8]')
-parser.add_argument('--model_path', default='log_s7_v2_k5_250/model.ckpt.meta', help='model checkpoint file path [default: log/model.ckpt.meta]')
+parser.add_argument('--model_path', default='log_s7_v2_k5_250/model.ckpt', help='model checkpoint file path [default: log/model.ckpt]')
 
 FLAGS = parser.parse_args()
 
@@ -133,9 +133,7 @@ def train():
         config.allow_soft_placement = True
         config.log_device_placement = False
         sess = tf.Session(config=config)
-        # saver.restore(sess, MODEL_PATH)
-        saver = tf.train.import_meta_graph(MODEL_PATH)
-        saver.restore(sess,MODEL_PATH)
+        saver.restore(sess, MODEL_PATH)
         log_string("Model restored.")
 
         # Add summary writers
