@@ -133,7 +133,8 @@ def train():
         config.allow_soft_placement = True
         config.log_device_placement = False
         sess = tf.Session(config=config)
-        saver.restore(sess, MODEL_PATH)
+        saver.restore(sess, tf.train.latest_checkpoint('./log_s7_v2_k5_250'))
+
         log_string("Model restored.")
 
         # Add summary writers
