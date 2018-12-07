@@ -135,7 +135,6 @@ def train():
         sess = tf.Session(config=config)
         saver.restore(sess, tf.train.latest_checkpoint('./log_s7_v2_k5_250'))
         graph = tf.get_default_graph()
-
         log_string("Model restored.")
 
         # Add summary writers
@@ -146,11 +145,11 @@ def train():
         test_writer = tf.summary.FileWriter(os.path.join(LOG_DIR, 'test'))
 
         # Init variables
-        init = tf.global_variables_initializer()
+        # init = tf.global_variables_initializer()
         # To fix the bug introduced in TF 0.12.1 as in
         # http://stackoverflow.com/questions/41543774/invalidargumenterror-for-tensor-bool-tensorflow-0-12-1
         #sess.run(init)
-        sess.run(init, {is_training_pl: True})
+        # sess.run(init, {is_training_pl: True})
 
         ops = {'pointclouds_pl': pointclouds_pl,
                'labels_pl': labels_pl,
