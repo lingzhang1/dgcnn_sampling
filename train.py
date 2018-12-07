@@ -135,7 +135,7 @@ def train():
         sess = tf.Session(config=config)
         # saver.restore(sess, MODEL_PATH)
         saver = tf.train.import_meta_graph(MODEL_PATH)
-        saver.restore(sess,tf.train.latest_checkpoint('./'))
+        saver.restore(sess,tf.train.latest_checkpoint(MODEL_PATH))
         log_string("Model restored.")
 
         # Add summary writers
